@@ -50,9 +50,5 @@ public class CameraParameters{
         }
         distCoeffs.put(0,0,distortionCoefficientsArray);
 	}
-
-
-
-
-
+	
 }
