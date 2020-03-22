@@ -7,8 +7,11 @@ import org.opencv.android.CameraBridgeViewBase.CvCameraViewListener2;
 import org.opencv.android.LoaderCallbackInterface;
 import org.opencv.android.OpenCVLoader;
 import org.opencv.core.Mat;
+import org.opencv.imgproc.Imgproc;
 
 import android.app.Activity;
+import android.app.ProgressDialog;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -18,19 +21,13 @@ import android.view.View;
 import android.view.View.OnTouchListener;
 import android.view.WindowManager;
 import android.widget.Toast;
-import org.opencv.imgproc.*;
 
-public class CameraCalibrationActivity extends Activity implements OnTouchListener,CvCameraViewListener2{
-	
-	private static final String LOADING_SUCCESS="Success: OpenCV loaded.";
-	private static final String ERROR_NATIVE_LIB="Error: libopencv_java3.so not found for this platform.";
-	
+public class CameraCalibrationActivity extends Activity 
+	implements OnTouchListener,CvCameraViewListener2,CameraCalibrator.OnAddFrameListener{
+		
 	private Mat rgb;
-	private Mat gray;
-	
-	private CameraBridgeViewBase camera;
-	
 	private CameraCalibrator calibrator;
+	private CameraBridgeViewBase camera;
     
 	private BaseLoaderCallback loaderCallback=new BaseLoaderCallback(this){
         @Override
@@ -39,7 +36,7 @@ public class CameraCalibrationActivity extends Activity implements OnTouchListen
 				case LoaderCallbackInterface.SUCCESS:{
 					camera.enableView();
 					camera.setOnTouchListener(CameraCalibrationActivity.this);
-					Toast.makeText(CameraCalibrationActivity.this,LOADING_SUCCESS,Toast.LENGTH_SHORT).show();
+					Toast.makeText(CameraCalibrationActivity.this,getString(R.string.success_ocv_loading),Toast.LENGTH_SHORT).show();
 					break;
 				}
 				default:{
@@ -69,7 +66,7 @@ public class CameraCalibrationActivity extends Activity implements OnTouchListen
 		if(OpenCVLoader.initDebug())
 			loaderCallback.onManagerConnected(LoaderCallbackInterface.SUCCESS);
 		else
-			Toast.makeText(this,ERROR_NATIVE_LIB,Toast.LENGTH_LONG).show();
+			Toast.makeText(this,getString(R.string.error_native_lib),Toast.LENGTH_LONG).show();
     }
 	
 	@Override
@@ -82,7 +79,7 @@ public class CameraCalibrationActivity extends Activity implements OnTouchListen
 	@Override
     public void onDestroy(){
         super.onDestroy();
-        if (camera!=null)
+        if(camera!=null)
             camera.disableView();
     }
 	
@@ -96,30 +93,93 @@ public class CameraCalibrationActivity extends Activity implements OnTouchListen
 
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item){
-		// TODO: Implement this method
-		return super.onOptionsItemSelected(item);
+		switch(item.getItemId()){
+			case R.id.calibrate:{
+				if(!calibrator.canCalibrate()){
+					Toast.makeText(this,getString(R.string.error_more_frames),Toast.LENGTH_SHORT).show();
+					return true;
+				}
+					
+				new AsyncTask<Void,Void,Void>(){
+					private double error=0;
+					private ProgressDialog progress;
+
+					@Override
+					protected void onPreExecute(){
+						progress=new ProgressDialog(CameraCalibrationActivity.this);
+						progress.setTitle(getString(R.string.calibrating));
+						progress.setMessage(getString(R.string.please_wait));
+						progress.setCancelable(false);
+						progress.setIndeterminate(true);
+						progress.show();
+					}
+
+					@Override
+					protected Void doInBackground(Void... arg0){
+						error=calibrator.calibrate();
+						return null;
+					}
+
+					@Override
+					protected void onPostExecute(Void result){
+						progress.dismiss();
+						calibrator.clear();
+						
+						CalibrationResult.save(
+							CameraCalibrationActivity.this,
+							calibrator.getCameraMatrix(),
+							calibrator.getDistorsionCoefficients()
+						);
+						
+						String resultMessage=getString(R.string.success_calibration)+error;
+						Toast.makeText(CameraCalibrationActivity.this,resultMessage,Toast.LENGTH_SHORT).show();
+						
+					}
+				}.execute();
+				return true;
+			}
+			default:
+				return super.onOptionsItemSelected(item);
+		}
 	}
 
 	@Override
 	public boolean onTouch(View view,MotionEvent event){
-		// TODO: Implement this method
-		return false;
+		if(event.getAction()==MotionEvent.ACTION_DOWN)
+			calibrator.addFrame();
+			
+		return true;
+	}
+
+	@Override
+	public void onAddFrame(final boolean added){
+		runOnUiThread(new Runnable(){
+			@Override
+			public void run(){
+				String message=null;
+				if(added)
+					message=getString(R.string.success_adding_frame);
+				else
+					message=getString(R.string.error_no_marker_detected);
+					
+				Toast.makeText(CameraCalibrationActivity.this,message,Toast.LENGTH_SHORT).show();
+			}
+		});
 	}
 
 	@Override
 	public void onCameraViewStarted(int width,int height){
 		rgb=new Mat();
-		gray=new Mat();
 		
 		calibrator=new CameraCalibrator(width,height);
+		calibrator.setOnAddFrameListener(this);
 	}
 
 	@Override
 	public Mat onCameraFrame(CameraBridgeViewBase.CvCameraViewFrame inputFrame){
 		Imgproc.cvtColor(inputFrame.rgba(),rgb,Imgproc.COLOR_RGBA2RGB);
 		
-		gray=inputFrame.gray();
-		calibrator.render(rgb,gray);
+		calibrator.render(rgb,inputFrame.gray());
 		
 		return rgb;
 	}
@@ -127,7 +187,7 @@ public class CameraCalibrationActivity extends Activity implements OnTouchListen
 	@Override
 	public void onCameraViewStopped(){
 		rgb.release();
-		gray.release();
+		calibrator.release();
 	}
 
 }
