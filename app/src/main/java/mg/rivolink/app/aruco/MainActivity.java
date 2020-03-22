@@ -1,27 +1,27 @@
 package mg.rivolink.app.aruco;
 
+import android.app.Activity;
+import android.os.Bundle;
+import android.view.SurfaceView;
+import android.view.WindowManager;
+import android.widget.Toast;
+
+import mg.rivolink.app.aruco.utils.CameraParameters;
+
 import org.opencv.android.BaseLoaderCallback;
 import org.opencv.android.CameraBridgeViewBase;
 import org.opencv.android.CameraBridgeViewBase.CvCameraViewFrame;
 import org.opencv.android.CameraBridgeViewBase.CvCameraViewListener2;
 import org.opencv.android.LoaderCallbackInterface;
 import org.opencv.android.OpenCVLoader;
+import org.opencv.core.CvType;
 import org.opencv.core.Mat;
 
-import android.app.Activity;
-import android.os.Bundle;
-import android.view.MotionEvent;
-import android.view.SurfaceView;
-import android.view.View;
-import android.view.View.OnTouchListener;
-import android.view.WindowManager;
-import android.widget.Toast;
+public class MainActivity extends Activity implements CvCameraViewListener2{
 
-public class MainActivity extends Activity implements OnTouchListener,CvCameraViewListener2{
-
-	private static final String LOADING_SUCCESS="Success: OpenCV loaded.";
-	private static final String ERROR_NATIVE_LIB="Error: libopencv_java3.so not found for this platform.";
-
+	private Mat cameraMatrix;
+	private Mat distCoeffs;
+	
 	private CameraBridgeViewBase camera;
 
 	private BaseLoaderCallback loaderCallback=new BaseLoaderCallback(this){
@@ -29,9 +29,15 @@ public class MainActivity extends Activity implements OnTouchListener,CvCameraVi
         public void onManagerConnected(int status){
             switch(status){
 				case LoaderCallbackInterface.SUCCESS:{
+					String message=null;
+					if(loadCameraParams())
+						message=getString(R.string.success_ocv_loading);
+					else
+						message=getString(R.string.error_camera_params);
+					
 					camera.enableView();
-					camera.setOnTouchListener(MainActivity.this);
-					Toast.makeText(MainActivity.this,LOADING_SUCCESS,Toast.LENGTH_SHORT).show();
+					
+					Toast.makeText(MainActivity.this,message,Toast.LENGTH_SHORT).show();
 					break;
 				}
 				default:{
@@ -42,6 +48,12 @@ public class MainActivity extends Activity implements OnTouchListener,CvCameraVi
         }
     };
 
+	private boolean loadCameraParams(){
+		cameraMatrix=Mat.eye(3,3,CvType.CV_64FC1);
+        distCoeffs=Mat.zeros(5,1,CvType.CV_64FC1);
+		return CameraParameters.tryLoad(this,cameraMatrix,distCoeffs);
+	}
+	
     @Override
     protected void onCreate(Bundle savedInstanceState){
         super.onCreate(savedInstanceState);
@@ -61,7 +73,7 @@ public class MainActivity extends Activity implements OnTouchListener,CvCameraVi
 		if(OpenCVLoader.initDebug())
 			loaderCallback.onManagerConnected(LoaderCallbackInterface.SUCCESS);
 		else
-			Toast.makeText(this,ERROR_NATIVE_LIB,Toast.LENGTH_LONG).show();
+			Toast.makeText(this,getString(R.string.error_native_lib),Toast.LENGTH_LONG).show();
     }
 
 	@Override
@@ -77,12 +89,6 @@ public class MainActivity extends Activity implements OnTouchListener,CvCameraVi
         if (camera!=null)
             camera.disableView();
     }
-
-	@Override
-	public boolean onTouch(View view,MotionEvent event){
-		// TODO: Implement this method
-		return false;
-	}
 
 	@Override
 	public void onCameraViewStarted(int width,int height){

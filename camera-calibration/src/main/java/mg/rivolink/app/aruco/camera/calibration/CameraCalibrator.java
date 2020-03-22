@@ -85,7 +85,7 @@ public class CameraCalibrator{
 	}
 	
 	public boolean canCalibrate(){
-		return captured>MIN_FRAMES;
+		return MIN_FRAMES<=captured;
 	}
 	
 	public void release(){

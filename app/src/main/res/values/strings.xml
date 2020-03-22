@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-
     <string name="app_name">Aruco Android</string>
-	
+	<string name="success_ocv_loading">Success: OpenCV loaded.</string>
+	<string name="error_native_lib">Error: libopencv_java3.so not found for this platform."</string>
+	<string name="error_camera_params">Error: Can\'t load camera parameters."</string>
 </resources>

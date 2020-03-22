@@ -169,10 +169,10 @@ public class CameraCalibrationActivity extends Activity
 
 	@Override
 	public void onCameraViewStarted(int width,int height){
-		rgb=new Mat();
-		
 		calibrator=new CameraCalibrator(width,height);
 		calibrator.setOnAddFrameListener(this);
+		
+		rgb=new Mat();
 	}
 
 	@Override
