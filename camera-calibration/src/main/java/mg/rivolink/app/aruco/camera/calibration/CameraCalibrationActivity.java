@@ -18,13 +18,19 @@ import android.view.View;
 import android.view.View.OnTouchListener;
 import android.view.WindowManager;
 import android.widget.Toast;
+import org.opencv.imgproc.*;
 
 public class CameraCalibrationActivity extends Activity implements OnTouchListener,CvCameraViewListener2{
 	
 	private static final String LOADING_SUCCESS="Success: OpenCV loaded.";
 	private static final String ERROR_NATIVE_LIB="Error: libopencv_java3.so not found for this platform.";
 	
+	private Mat rgb;
+	private Mat gray;
+	
 	private CameraBridgeViewBase camera;
+	
+	private CameraCalibrator calibrator;
     
 	private BaseLoaderCallback loaderCallback=new BaseLoaderCallback(this){
         @Override
@@ -102,18 +108,26 @@ public class CameraCalibrationActivity extends Activity implements OnTouchListen
 
 	@Override
 	public void onCameraViewStarted(int width,int height){
-		// TODO: Implement this method
+		rgb=new Mat();
+		gray=new Mat();
+		
+		calibrator=new CameraCalibrator(width,height);
 	}
 
 	@Override
 	public Mat onCameraFrame(CameraBridgeViewBase.CvCameraViewFrame inputFrame){
-		// TODO: Implement this method
-		return inputFrame.rgba();
+		Imgproc.cvtColor(inputFrame.rgba(),rgb,Imgproc.COLOR_RGBA2RGB);
+		
+		gray=inputFrame.gray();
+		calibrator.render(rgb,gray);
+		
+		return rgb;
 	}
 
 	@Override
 	public void onCameraViewStopped(){
-		// TODO: Implement this method
+		rgb.release();
+		gray.release();
 	}
 
 }
