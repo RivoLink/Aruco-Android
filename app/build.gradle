@@ -6,8 +6,8 @@ android {
 
     defaultConfig {
         applicationId "mg.rivolink.app.aruco"
-        minSdkVersion 8
-        targetSdkVersion 8
+        minSdkVersion 15
+        targetSdkVersion 21
         versionCode 1
         versionName "1.0"
     }
@@ -22,4 +22,5 @@ android {
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
 	implementation project(':opencv344-contrib')
+	implementation 'org.rajawali3d:rajawali:1.1.970'
 }

@@ -2,14 +2,16 @@ package mg.rivolink.app.aruco;
 
 import android.app.Activity;
 import android.os.Bundle;
-import android.view.SurfaceView;
+import android.view.ViewGroup;
 import android.view.WindowManager;
+import android.widget.LinearLayout;
 import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
+import mg.rivolink.app.aruco.renderer.Renderer3D;
 import mg.rivolink.app.aruco.utils.CameraParameters;
 
 import org.opencv.android.BaseLoaderCallback;
@@ -26,12 +28,13 @@ import org.opencv.core.Mat;
 import org.opencv.core.MatOfInt;
 import org.opencv.imgproc.Imgproc;
 
+import org.rajawali3d.view.ISurface;
+import org.rajawali3d.view.SurfaceView;
+
 public class MainActivity extends Activity implements CvCameraViewListener2{
 
 	private Mat cameraMatrix;
 	private Mat distCoeffs;
-
-	private CameraBridgeViewBase camera;
 
 	private Mat rgb;
 	private Mat gray;
@@ -43,6 +46,9 @@ public class MainActivity extends Activity implements CvCameraViewListener2{
 	private List<Mat> corners;
 	private Dictionary dictionary;
 	private DetectorParameters parameters;
+
+	private Renderer3D renderer;
+	private CameraBridgeViewBase camera;
 
 	private BaseLoaderCallback loaderCallback=new BaseLoaderCallback(this){
         @Override
@@ -78,7 +84,14 @@ public class MainActivity extends Activity implements CvCameraViewListener2{
         camera=findViewById(R.id.main_camera);
         camera.setVisibility(SurfaceView.VISIBLE);
         camera.setCvCameraViewListener(this);
-    }
+
+		renderer=new Renderer3D(this);
+
+		SurfaceView surface=findViewById(R.id.main_surface);
+		surface.setTransparent(true);
+		surface.setSurfaceRenderer(renderer);
+
+	}
 
 	@Override
     public void onResume(){
@@ -150,4 +163,5 @@ public class MainActivity extends Activity implements CvCameraViewListener2{
 	}
 
 }
+
 
