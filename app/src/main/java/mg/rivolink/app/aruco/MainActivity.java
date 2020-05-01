@@ -149,6 +149,7 @@ public class MainActivity extends Activity implements CvCameraViewListener2{
 
 			Aruco.estimatePoseSingleMarkers(corners,0.04f,cameraMatrix,distCoeffs,rvecs,tvecs);
 			for(int i=0;i<ids.toArray().length;i++){
+				transformModel(tvecs.row(0),rvecs.row(0));
 				Aruco.drawAxis(rgb,cameraMatrix,distCoeffs,rvecs.row(i),tvecs.row(i),0.02f);
 			}
 
@@ -161,7 +162,23 @@ public class MainActivity extends Activity implements CvCameraViewListener2{
 	public void onCameraViewStopped(){
 		rgb.release();
 	}
-
+	
+	private void transformModel(final Mat tvec,final Mat rvec){
+		runOnUiThread(new Runnable(){
+			@Override
+			public void run(){
+				renderer.transform(
+					tvec.get(0,0)[0]*50,
+					-tvec.get(0,0)[1]*50,
+					-tvec.get(0,0)[2]*50,
+				
+					rvec.get(0,0)[2],//yaw
+					rvec.get(0,0)[1],//pitch
+					rvec.get(0,0)[0] //roll
+				);
+			}
+		});
+	}
 }
 
 

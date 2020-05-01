@@ -11,6 +11,7 @@ import org.rajawali3d.math.vector.Vector3;
 import org.rajawali3d.renderer.Renderer;
 
 import mg.rivolink.app.aruco.R;
+import org.rajawali3d.math.*;
 
 public class Renderer3D extends Renderer{
 	
@@ -22,30 +23,44 @@ public class Renderer3D extends Renderer{
 		setFrameRate(60);
 	}
 
+	@Override
 	protected void initScene() {
 		light=new PointLight();
 		light.setPosition(0,0,4);
 		light.setPower(3);
 
 		try {
-			LoaderOBJ objParser=new LoaderOBJ(mContext.getResources(),mTextureManager,R.raw.camaro_obj);
+			LoaderOBJ objParser=new LoaderOBJ(mContext.getResources(),mTextureManager,R.raw.box_obj);
 			objParser.parse();
 			model=objParser.getParsedObject();
-			model.setPosition(0,0,-5);
-			model.setRotation(90,90,0);
+			model.setPosition(0,0,-10);
+			model.setVisible(false);
 			getCurrentScene().addLight(light);
 			getCurrentScene().addChild(model);
-
 
 		} catch(ParsingException e) {
 			e.printStackTrace();
 		}
 	}
+	
+	public void transform(double tx,double ty,double tz,double yaw,double pitch,double roll){
+		/* Some bugs here
+		if(!model.isVisible())
+			model.setVisible(true);
+		
+		model.setPosition(tx,ty,tz);
+		model.setOrientation(new Quaternion().fromEuler(
+			Math.toDegrees(yaw),
+			Math.toDegrees(pitch),
+			Math.toDegrees(roll)
+		));
+		*/
+	}
 
 	@Override
 	protected void render(long ellapsedRealtime,double deltaTime){
 		super.render(ellapsedRealtime,deltaTime);
-		model.rotate(Vector3.Axis.Y,0.5);
+		//model.rotate(Vector3.Axis.Y,0.5);
 	}
 
 	@Override
