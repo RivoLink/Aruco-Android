@@ -42,29 +42,25 @@ public class ImageActivity extends Activity {
 	private ImageView imageView;
 	private Bitmap originalBMP;
 	
-	private BaseLoaderCallback loaderCallback = new BaseLoaderCallback(this){
+	private final BaseLoaderCallback loaderCallback = new BaseLoaderCallback(this){
         @Override
         public void onManagerConnected(int status){
-            switch(status){
-				case LoaderCallbackInterface.SUCCESS:{
-					String message = null;
-					
-					if(loadCameraParams()){
-						message = getString(R.string.info_detecting_markers);
-						detectMarkersAsync();
-					}
-					else{
-						message = getString(R.string.error_camera_params);
-					}
-					
-					Toast.makeText(ImageActivity.this,message,Toast.LENGTH_SHORT).show();
-					break;
+			if(status == LoaderCallbackInterface.SUCCESS){
+				String message = "";
+
+				if(loadCameraParams()){
+					message = getString(R.string.info_detecting_markers);
+					detectMarkersAsync();
 				}
-				default:{
-					super.onManagerConnected(status);
-					break;
+				else {
+					message = getString(R.string.error_camera_params);
 				}
-            }
+
+				Toast.makeText(ImageActivity.this,  message,  Toast.LENGTH_SHORT).show();
+			} 
+			else {
+				super.onManagerConnected(status);
+			}
         }
     };
 
@@ -92,19 +88,19 @@ public class ImageActivity extends Activity {
 		if(OpenCVLoader.initDebug())
 			loaderCallback.onManagerConnected(LoaderCallbackInterface.SUCCESS);
 		else
-			Toast.makeText(this,getString(R.string.error_native_lib),Toast.LENGTH_LONG).show();
+			Toast.makeText(this, getString(R.string.error_native_lib), Toast.LENGTH_LONG).show();
 	}
 	
 	private boolean loadCameraParams(){
-		cameraMatrix = Mat.eye(3,3,CvType.CV_64FC1);
-        distCoeffs = Mat.zeros(5,1,CvType.CV_64FC1);
-		return CameraParameters.tryLoad(this,cameraMatrix,distCoeffs);
+		cameraMatrix = Mat.eye(3, 3, CvType.CV_64FC1);
+        distCoeffs = Mat.zeros(5, 1, CvType.CV_64FC1);
+		return CameraParameters.tryLoad(this, cameraMatrix, distCoeffs);
 	}
 	
 	private void detectMarkersAsync(){
 		new Thread(){
 			
-			private Bitmap bitmap;
+			Bitmap bitmap;
 			
 			@Override
 			public void run() {
@@ -113,10 +109,10 @@ public class ImageActivity extends Activity {
 				ImageActivity.this.runOnUiThread(new Runnable(){
 					@Override
 					public void run() {
-						if(bitmap != null)
-							imageView.setImageBitmap(bitmap);
-						else
-							Toast.makeText(ImageActivity.this,getString(R.string.info_no_marker),Toast.LENGTH_SHORT).show();
+					if(bitmap != null)
+						imageView.setImageBitmap(bitmap);
+					else
+						Toast.makeText(ImageActivity.this, getString(R.string.info_no_marker), Toast.LENGTH_SHORT).show();
 					}
 				});
 			}
@@ -127,37 +123,37 @@ public class ImageActivity extends Activity {
 		Bitmap bitmap = null;
 		
 		Mat rgba = new Mat();
-		Utils.bitmapToMat(original,rgba);
+		Utils.bitmapToMat(original, rgba);
 		
 		Mat rgb = new Mat();
-		Imgproc.cvtColor(rgba,rgb,Imgproc.COLOR_RGBA2RGB);
+		Imgproc.cvtColor(rgba, rgb, Imgproc.COLOR_RGBA2RGB);
 		
 		Mat gray = new Mat();
-		Imgproc.cvtColor(rgba,gray,Imgproc.COLOR_RGBA2GRAY);
+		Imgproc.cvtColor(rgba, gray, Imgproc.COLOR_RGBA2GRAY);
 		
-		MatOfInt ids=new MatOfInt();
+		MatOfInt ids = new MatOfInt();
 		List<Mat> corners = new LinkedList<>();
 		Dictionary dictionary = Aruco.getPredefinedDictionary(Aruco.DICT_6X6_50);
 		DetectorParameters parameters = DetectorParameters.create();
 
-		Aruco.detectMarkers(gray,dictionary,corners,ids,parameters);
+		Aruco.detectMarkers(gray, dictionary, corners, ids, parameters);
 
 		if(corners.size() > 0){
-			Aruco.drawDetectedMarkers(rgb,corners,ids);
+			Aruco.drawDetectedMarkers(rgb, corners, ids);
 
 			Mat rvecs = new Mat();
 			Mat tvecs = new Mat();
 
-			Aruco.estimatePoseSingleMarkers(corners,0.04f,cameraMatrix,distCoeffs,rvecs,tvecs);
-			for(int i=0;i<ids.toArray().length;i++){
-				Aruco.drawAxis(rgb,cameraMatrix,distCoeffs,rvecs.row(i),tvecs.row(i),0.02f);
+			Aruco.estimatePoseSingleMarkers(corners, 0.04f, cameraMatrix, distCoeffs, rvecs, tvecs);
+			for(int i = 0; i < ids.toArray().length; i++){
+				Aruco.drawAxis(rgb, cameraMatrix, distCoeffs, rvecs.row(i), tvecs.row(i), 0.02f);
 			}
 			
 			rvecs.release();
 			tvecs.release();
 
-			bitmap=Bitmap.createBitmap(rgb.width(),rgb.height(),Bitmap.Config.RGB_565);
-			Utils.matToBitmap(rgb,bitmap);
+			bitmap=Bitmap.createBitmap(rgb.width(), rgb.height(), Bitmap.Config.RGB_565);
+			Utils.matToBitmap(rgb, bitmap);
 		}
 		
 		rgba.release();

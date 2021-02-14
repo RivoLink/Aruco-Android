@@ -2,12 +2,9 @@ package mg.rivolink.app.aruco;
 
 import android.app.Activity;
 import android.os.Bundle;
-import android.view.ViewGroup;
 import android.view.WindowManager;
-import android.widget.LinearLayout;
 import android.widget.Toast;
 
-import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -16,7 +13,6 @@ import mg.rivolink.app.aruco.utils.CameraParameters;
 
 import org.opencv.android.BaseLoaderCallback;
 import org.opencv.android.CameraBridgeViewBase;
-import org.opencv.android.CameraBridgeViewBase.CvCameraViewFrame;
 import org.opencv.android.CameraBridgeViewBase.CvCameraViewListener2;
 import org.opencv.android.LoaderCallbackInterface;
 import org.opencv.android.OpenCVLoader;
@@ -28,10 +24,9 @@ import org.opencv.core.Mat;
 import org.opencv.core.MatOfInt;
 import org.opencv.imgproc.Imgproc;
 
-import org.rajawali3d.view.ISurface;
 import org.rajawali3d.view.SurfaceView;
 
-public class MainActivity extends Activity implements CvCameraViewListener2{
+public class MainActivity extends Activity implements CvCameraViewListener2 {
 
 	private Mat cameraMatrix;
 	private Mat distCoeffs;
@@ -50,27 +45,24 @@ public class MainActivity extends Activity implements CvCameraViewListener2{
 	private Renderer3D renderer;
 	private CameraBridgeViewBase camera;
 
-	private BaseLoaderCallback loaderCallback=new BaseLoaderCallback(this){
+	private final BaseLoaderCallback loaderCallback = new BaseLoaderCallback(this){
         @Override
         public void onManagerConnected(int status){
-            switch(status){
-				case LoaderCallbackInterface.SUCCESS:{
-					String message=null;
-					if(loadCameraParams())
-						message=getString(R.string.success_ocv_loading);
-					else
-						message=getString(R.string.error_camera_params);
+			if(status == LoaderCallbackInterface.SUCCESS){
+				String message = "";
 
-					camera.enableView();
+				if (loadCameraParams())
+					message = getString(R.string.success_ocv_loading);
+				else
+					message = getString(R.string.error_camera_params);
 
-					Toast.makeText(MainActivity.this,message,Toast.LENGTH_SHORT).show();
-					break;
-				}
-				default:{
-					super.onManagerConnected(status);
-					break;
-				}
-            }
+				camera.enableView();
+
+				Toast.makeText(MainActivity.this,  message,  Toast.LENGTH_SHORT).show();
+			}
+			else {
+				super.onManagerConnected(status);
+			}
         }
     };
 
@@ -81,13 +73,13 @@ public class MainActivity extends Activity implements CvCameraViewListener2{
 
         setContentView(R.layout.main_layout);
 
-        camera=findViewById(R.id.main_camera);
+        camera = findViewById(R.id.main_camera);
         camera.setVisibility(SurfaceView.VISIBLE);
         camera.setCvCameraViewListener(this);
 
-		renderer=new Renderer3D(this);
+		renderer = new Renderer3D(this);
 
-		SurfaceView surface=findViewById(R.id.main_surface);
+		SurfaceView surface = findViewById(R.id.main_surface);
 		surface.setTransparent(true);
 		surface.setSurfaceRenderer(renderer);
 
@@ -100,57 +92,59 @@ public class MainActivity extends Activity implements CvCameraViewListener2{
 		if(OpenCVLoader.initDebug())
 			loaderCallback.onManagerConnected(LoaderCallbackInterface.SUCCESS);
 		else
-			Toast.makeText(this,getString(R.string.error_native_lib),Toast.LENGTH_LONG).show();
+			Toast.makeText(this, getString(R.string.error_native_lib), Toast.LENGTH_LONG).show();
     }
 
 	private boolean loadCameraParams(){
-		cameraMatrix=Mat.eye(3,3,CvType.CV_64FC1);
-        distCoeffs=Mat.zeros(5,1,CvType.CV_64FC1);
-		return CameraParameters.tryLoad(this,cameraMatrix,distCoeffs);
+		cameraMatrix = Mat.eye(3, 3, CvType.CV_64FC1);
+        distCoeffs = Mat.zeros(5, 1, CvType.CV_64FC1);
+		return CameraParameters.tryLoad(this, cameraMatrix, distCoeffs);
 	}
 
 	@Override
     public void onPause(){
         super.onPause();
-        if(camera!=null)
+
+        if(camera != null)
             camera.disableView();
     }
 
 	@Override
     public void onDestroy(){
         super.onDestroy();
-        if (camera!=null)
+
+        if (camera != null)
             camera.disableView();
     }
 
 	@Override
-	public void onCameraViewStarted(int width,int height){
-		rgb=new Mat();
-		corners=new LinkedList<>();
-		parameters=DetectorParameters.create();
-		dictionary=Aruco.getPredefinedDictionary(Aruco.DICT_6X6_50);
+	public void onCameraViewStarted(int width, int height){
+		rgb = new Mat();
+		corners = new LinkedList<>();
+		parameters = DetectorParameters.create();
+		dictionary = Aruco.getPredefinedDictionary(Aruco.DICT_6X6_50);
 	}
 
 	@Override
 	public Mat onCameraFrame(CameraBridgeViewBase.CvCameraViewFrame inputFrame){
-		Imgproc.cvtColor(inputFrame.rgba(),rgb,Imgproc.COLOR_RGBA2RGB);
-		gray=inputFrame.gray();
+		Imgproc.cvtColor(inputFrame.rgba(), rgb, Imgproc.COLOR_RGBA2RGB);
+		gray = inputFrame.gray();
 
-		ids=new MatOfInt();
+		ids = new MatOfInt();
 		corners.clear();
 
-		Aruco.detectMarkers(gray,dictionary,corners,ids,parameters);
+		Aruco.detectMarkers(gray, dictionary, corners, ids, parameters);
 
 		if(corners.size()>0){
-			Aruco.drawDetectedMarkers(rgb,corners,ids);
+			Aruco.drawDetectedMarkers(rgb, corners, ids);
 
-			rvecs=new Mat();
-			tvecs=new Mat();
+			rvecs = new Mat();
+			tvecs = new Mat();
 
-			Aruco.estimatePoseSingleMarkers(corners,0.04f,cameraMatrix,distCoeffs,rvecs,tvecs);
-			for(int i=0;i<ids.toArray().length;i++){
-				transformModel(tvecs.row(0),rvecs.row(0));
-				Aruco.drawAxis(rgb,cameraMatrix,distCoeffs,rvecs.row(i),tvecs.row(i),0.02f);
+			Aruco.estimatePoseSingleMarkers(corners, 0.04f, cameraMatrix, distCoeffs, rvecs, tvecs);
+			for(int i = 0;i<ids.toArray().length;i++){
+				transformModel(tvecs.row(0), rvecs.row(0));
+				Aruco.drawAxis(rgb, cameraMatrix, distCoeffs, rvecs.row(i), tvecs.row(i), 0.02f);
 			}
 
 		}
@@ -163,18 +157,18 @@ public class MainActivity extends Activity implements CvCameraViewListener2{
 		rgb.release();
 	}
 	
-	private void transformModel(final Mat tvec,final Mat rvec){
+	private void transformModel(final Mat tvec, final Mat rvec){
 		runOnUiThread(new Runnable(){
 			@Override
 			public void run(){
 				renderer.transform(
-					tvec.get(0,0)[0]*50,
-					-tvec.get(0,0)[1]*50,
-					-tvec.get(0,0)[2]*50,
+					tvec.get(0, 0)[0]*50,
+					-tvec.get(0, 0)[1]*50,
+					-tvec.get(0, 0)[2]*50,
 				
-					rvec.get(0,0)[2],//yaw
-					rvec.get(0,0)[1],//pitch
-					rvec.get(0,0)[0] //roll
+					rvec.get(0, 0)[2], //yaw
+					rvec.get(0, 0)[1], //pitch
+					rvec.get(0, 0)[0] //roll
 				);
 			}
 		});

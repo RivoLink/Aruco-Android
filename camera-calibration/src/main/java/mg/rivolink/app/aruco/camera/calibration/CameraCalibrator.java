@@ -18,15 +18,15 @@ import org.opencv.core.Size;
 import org.opencv.imgproc.Imgproc;
 
 public class CameraCalibrator{
-	private static final int MIN_FRAMES=15;
+	private static final int MIN_FRAMES = 15;
 	
-	private int captured=0;
+	private int captured = 0;
 	
-	private int markerNumX=5;
-	private int markerNumY=7;
+	private int markerNumX = 5;
+	private int markerNumY = 7;
 	
-	private float markerLength=0.032f;
-	private float markerDistance=0.003f;
+	private float markerLength = 0.032f;
+	private float markerDistance = 0.003f;
 	
 	private Size size;
 	private Board board;
@@ -44,7 +44,7 @@ public class CameraCalibrator{
 	private List<Mat> rejected;
 	private DetectorParameters parameters;
 	
-	private boolean addFrame=false;
+	private boolean addFrame = false;
 	private OnAddFrameListener listener;
 	
 	interface OnAddFrameListener{
@@ -59,33 +59,33 @@ public class CameraCalibrator{
 		return distCoeffs;
 	}
 	
-	public CameraCalibrator(int width,int height){
-		size=new Size(width,height);
-		dictionary=Aruco.getPredefinedDictionary(Aruco.DICT_6X6_50);
-		board=GridBoard.create(markerNumX,markerNumY,markerLength,markerDistance,dictionary);
+	public CameraCalibrator(int width, int height){
+		size = new Size(width, height);
+		dictionary = Aruco.getPredefinedDictionary(Aruco.DICT_6X6_50);
+		board = GridBoard.create(markerNumX, markerNumY, markerLength, markerDistance, dictionary);
 		
-		cameraMatrix=Mat.eye(3,3,CvType.CV_64FC1);
-        distCoeffs=Mat.zeros(5,1,CvType.CV_64FC1);
+		cameraMatrix = Mat.eye(3, 3, CvType.CV_64FC1);
+        distCoeffs = Mat.zeros(5, 1, CvType.CV_64FC1);
 		
-		allIdsConcatenated=new Mat();
-		allCornersConcatenated=new LinkedList<>();
-		markerCounterPerFrame=new MatOfInt();
+		allIdsConcatenated = new Mat();
+		allCornersConcatenated = new LinkedList<>();
+		markerCounterPerFrame = new MatOfInt();
 		
-		corners=new LinkedList<>();
-		rejected=new LinkedList<>();
-		parameters=DetectorParameters.create();
+		corners = new LinkedList<>();
+		rejected = new LinkedList<>();
+		parameters = DetectorParameters.create();
 	}
 	
 	public void addFrame(){
-		addFrame=true;
+		addFrame = true;
 	}
 	
 	public void setOnAddFrameListener(OnAddFrameListener listener){
-		this.listener=listener;
+		this.listener = listener;
 	}
 	
 	public boolean canCalibrate(){
-		return MIN_FRAMES<=captured;
+		return MIN_FRAMES <= captured;
 	}
 	
 	public void release(){
@@ -95,20 +95,20 @@ public class CameraCalibrator{
 	}
 	
 	public void clear(){
-		captured=0;
+		captured = 0;
 		
 		allCornersConcatenated.clear();
 		
 		allIdsConcatenated.release();
-		allIdsConcatenated=new Mat();
+		allIdsConcatenated = new Mat();
 		
 		markerCounterPerFrame.release();
-		markerCounterPerFrame=new MatOfInt();
+		markerCounterPerFrame = new MatOfInt();
 	}
 	
 	public double calibrate(){
-		List<Mat> rvecs=new LinkedList<>();
-		List<Mat> tvecs=new LinkedList<>();
+		List<Mat> rvecs = new LinkedList<>();
+		List<Mat> tvecs = new LinkedList<>();
 
 		return Aruco.calibrateCameraAruco(
 			allCornersConcatenated,
@@ -123,11 +123,11 @@ public class CameraCalibrator{
 		);
 	}
 	
-	public void render(Mat rgb,Mat gray){
-		detectMarkers(rgb,gray);
+	public void render(Mat rgb, Mat gray){
+		detectMarkers(rgb, gray);
 		
-		Imgproc.putText(rgb,"Captured: "+captured,new Point(rgb.cols()/3*2,rgb.rows()* 0.1),
-					 Core.FONT_HERSHEY_SIMPLEX,1.0,new Scalar(255,255,0));
+		Imgproc.putText(rgb, "Captured: "+captured, new Point(rgb.cols()/3*2, rgb.rows()*0.1),
+					 Core.FONT_HERSHEY_SIMPLEX, 1.0, new Scalar(255, 255, 0));
 	}
 	
 	private boolean saveFrame(){
@@ -143,23 +143,23 @@ public class CameraCalibrator{
 		return true;
 	}
 	
-	private void detectMarkers(Mat rgb,Mat gray){
-		ids=new MatOfInt();
+	private void detectMarkers(Mat rgb, Mat gray){
+		ids = new MatOfInt();
 		
 		corners.clear();
 		rejected.clear();
 		
-		Aruco.detectMarkers(gray,dictionary,corners,ids,parameters,rejected);
-		Aruco.refineDetectedMarkers(gray,board,corners,ids,rejected);
+		Aruco.detectMarkers(gray, dictionary, corners, ids, parameters, rejected);
+		Aruco.refineDetectedMarkers(gray, board, corners, ids, rejected);
 
 		if(corners.size()>0)
-			Aruco.drawDetectedMarkers(rgb,corners);
+			Aruco.drawDetectedMarkers(rgb, corners);
 		
 		if(addFrame){
-			addFrame=false;
-			boolean saved=saveFrame();
+			addFrame = false;
+			boolean saved = saveFrame();
 			
-			if(listener!=null)
+			if(listener != null)
 				listener.onAddFrame(saved);
 		}
 	}

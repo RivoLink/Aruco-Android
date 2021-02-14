@@ -2,7 +2,6 @@ package mg.rivolink.app.aruco.camera.calibration;
 
 import org.opencv.android.BaseLoaderCallback;
 import org.opencv.android.CameraBridgeViewBase;
-import org.opencv.android.CameraBridgeViewBase.CvCameraViewFrame;
 import org.opencv.android.CameraBridgeViewBase.CvCameraViewListener2;
 import org.opencv.android.LoaderCallbackInterface;
 import org.opencv.android.OpenCVLoader;
@@ -23,27 +22,24 @@ import android.view.WindowManager;
 import android.widget.Toast;
 
 public class CameraCalibrationActivity extends Activity 
-	implements OnTouchListener,CvCameraViewListener2,CameraCalibrator.OnAddFrameListener{
+	implements OnTouchListener, CvCameraViewListener2, CameraCalibrator.OnAddFrameListener {
 		
 	private Mat rgb;
 	private CameraCalibrator calibrator;
 	private CameraBridgeViewBase camera;
     
-	private BaseLoaderCallback loaderCallback=new BaseLoaderCallback(this){
+	private final BaseLoaderCallback loaderCallback = new BaseLoaderCallback(this){
         @Override
         public void onManagerConnected(int status){
-            switch(status){
-				case LoaderCallbackInterface.SUCCESS:{
-					camera.enableView();
-					camera.setOnTouchListener(CameraCalibrationActivity.this);
-					Toast.makeText(CameraCalibrationActivity.this,getString(R.string.success_ocv_loading),Toast.LENGTH_SHORT).show();
-					break;
-				}
-				default:{
-					super.onManagerConnected(status);
-					break;
-				}
-            }
+			if(status == LoaderCallbackInterface.SUCCESS){
+				camera.enableView();
+				camera.setOnTouchListener(CameraCalibrationActivity.this);
+
+				Toast.makeText(CameraCalibrationActivity.this, getString(R.string.success_ocv_loading), Toast.LENGTH_SHORT).show();
+			}
+			else {
+				super.onManagerConnected(status);
+			}
         }
     };
 	
@@ -54,7 +50,7 @@ public class CameraCalibrationActivity extends Activity
 
         setContentView(R.layout.camera_calibration_layout);
 
-        camera=findViewById(R.id.camera_calibration_camera);
+        camera = findViewById(R.id.camera_calibration_camera);
         camera.setVisibility(SurfaceView.VISIBLE);
         camera.setCvCameraViewListener(this);
     }
@@ -66,27 +62,29 @@ public class CameraCalibrationActivity extends Activity
 		if(OpenCVLoader.initDebug())
 			loaderCallback.onManagerConnected(LoaderCallbackInterface.SUCCESS);
 		else
-			Toast.makeText(this,getString(R.string.error_native_lib),Toast.LENGTH_LONG).show();
+			Toast.makeText(this, getString(R.string.error_native_lib), Toast.LENGTH_LONG).show();
     }
 	
 	@Override
     public void onPause(){
         super.onPause();
-        if(camera!=null)
+
+        if(camera != null)
             camera.disableView();
     }
 
 	@Override
     public void onDestroy(){
         super.onDestroy();
-        if(camera!=null)
+
+        if(camera != null)
             camera.disableView();
     }
 	
 	@Override
     public boolean onCreateOptionsMenu(Menu menu){
         super.onCreateOptionsMenu(menu);
-        getMenuInflater().inflate(R.menu.camera_calibration_menu,menu);
+        getMenuInflater().inflate(R.menu.camera_calibration_menu, menu);
 
         return true;
     }
@@ -96,7 +94,7 @@ public class CameraCalibrationActivity extends Activity
 		switch(item.getItemId()){
 			case R.id.calibrate:{
 				if(!calibrator.canCalibrate()){
-					Toast.makeText(this,getString(R.string.error_more_frames),Toast.LENGTH_SHORT).show();
+					Toast.makeText(this, getString(R.string.error_more_frames), Toast.LENGTH_SHORT).show();
 					return true;
 				}
 					
@@ -106,7 +104,7 @@ public class CameraCalibrationActivity extends Activity
 
 					@Override
 					protected void onPreExecute(){
-						progress=new ProgressDialog(CameraCalibrationActivity.this);
+						progress = new ProgressDialog(CameraCalibrationActivity.this);
 						progress.setTitle(getString(R.string.calibrating));
 						progress.setMessage(getString(R.string.please_wait));
 						progress.setCancelable(false);
@@ -116,7 +114,7 @@ public class CameraCalibrationActivity extends Activity
 
 					@Override
 					protected Void doInBackground(Void... arg0){
-						error=calibrator.calibrate();
+						error = calibrator.calibrate();
 						return null;
 					}
 
@@ -131,8 +129,8 @@ public class CameraCalibrationActivity extends Activity
 							calibrator.getDistorsionCoefficients()
 						);
 						
-						String resultMessage=getString(R.string.success_calibration)+error;
-						Toast.makeText(CameraCalibrationActivity.this,resultMessage,Toast.LENGTH_SHORT).show();
+						String resultMessage = getString(R.string.success_calibration) + error;
+						Toast.makeText(CameraCalibrationActivity.this, resultMessage, Toast.LENGTH_SHORT).show();
 						
 					}
 				}.execute();
@@ -145,7 +143,7 @@ public class CameraCalibrationActivity extends Activity
 
 	@Override
 	public boolean onTouch(View view,MotionEvent event){
-		if(event.getAction()==MotionEvent.ACTION_DOWN)
+		if(event.getAction() == MotionEvent.ACTION_DOWN)
 			calibrator.addFrame();
 			
 		return true;
@@ -156,30 +154,31 @@ public class CameraCalibrationActivity extends Activity
 		runOnUiThread(new Runnable(){
 			@Override
 			public void run(){
-				String message=null;
+				String message = null;
+
 				if(added)
-					message=getString(R.string.success_adding_frame);
+					message = getString(R.string.success_adding_frame);
 				else
-					message=getString(R.string.error_no_marker_detected);
+					message = getString(R.string.error_no_marker_detected);
 					
-				Toast.makeText(CameraCalibrationActivity.this,message,Toast.LENGTH_SHORT).show();
+				Toast.makeText(CameraCalibrationActivity.this, message, Toast.LENGTH_SHORT).show();
 			}
 		});
 	}
 
 	@Override
-	public void onCameraViewStarted(int width,int height){
-		calibrator=new CameraCalibrator(width,height);
+	public void onCameraViewStarted(int width, int height){
+		calibrator = new CameraCalibrator(width, height);
 		calibrator.setOnAddFrameListener(this);
 		
-		rgb=new Mat();
+		rgb = new Mat();
 	}
 
 	@Override
 	public Mat onCameraFrame(CameraBridgeViewBase.CvCameraViewFrame inputFrame){
-		Imgproc.cvtColor(inputFrame.rgba(),rgb,Imgproc.COLOR_RGBA2RGB);
+		Imgproc.cvtColor(inputFrame.rgba(), rgb, Imgproc.COLOR_RGBA2RGB);
 		
-		calibrator.render(rgb,inputFrame.gray());
+		calibrator.render(rgb, inputFrame.gray());
 		
 		return rgb;
 	}
