@@ -30,7 +30,7 @@ Aruco Android is an application to detect ***Aruco Markers***, and try to render
 If you have `No Implementation Found` or `library "libopencv_java3.so" not found`
 
 - download these [libraries](https://github.com/RivoLink/opencv-android/tree/master/opencv3_4_4_contrib/native/libs)
-- then, paste all in the [directory](https://github.com/RivoLink/Aruco-Android/tree/master/opencv344-contrib/src/main/jniLibs) of your project:
+- then, paste all in the [directory](https://github.com/RivoLink/Aruco-Android/tree/master/opencv344-contrib/src/main/jniLibs) of your project
 
 ## Using
 
