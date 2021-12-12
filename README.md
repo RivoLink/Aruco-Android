@@ -33,7 +33,6 @@ If you have `No Implementation Found` or `library "libopencv_java3.so" not found
 git fetch origin
 git checkout feature/all-platforms
 git pull origin feature/all-platforms
-
 ```
 
 Alternative method:
