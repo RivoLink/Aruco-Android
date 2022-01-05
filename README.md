@@ -36,6 +36,7 @@ git pull origin feature/all-platforms
 ```
 
 Alternative method:
+
 Copy all the native opencv libraries into the project, for this:
 
 - download these [libraries](https://github.com/RivoLink/opencv-android/tree/master/opencv3_4_4_contrib/native/libs)
