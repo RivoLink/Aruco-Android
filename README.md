@@ -21,6 +21,10 @@ See more about ***opencv***, and ***aruco*** from:
 - [aruco](http://www.uco.es/investiga/grupos/ava/node/26)
 - [rajawali](https://github.com/Rajawali/Rajawali)
 
+## License
+
+As stated above, **opencv-contrib** uses the BSD license. For details, see [LICENSE](opencv344-contrib/LICENSE).
+
 ## About
 
 Aruco Android is an application to detect ***Aruco Markers***, and try to render a 3D model above it.
