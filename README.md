@@ -42,7 +42,7 @@ git pull origin feature/all-platforms
 Alternative method: copy all the native opencv libraries into the project, for this:
 
 - download these [libraries](https://github.com/RivoLink/opencv-android/tree/master/opencv3_4_4_contrib/native/libs)
-- then, paste all in the [directory](https://github.com/RivoLink/Aruco-Android/tree/master/opencv344-contrib/src/main/jniLibs) of your project
+- then, paste all in this [directory](https://github.com/RivoLink/Aruco-Android/tree/master/opencv344-contrib/src/main/jniLibs) of your project
 
 ## Using
 
@@ -74,3 +74,11 @@ You can help turn this application into Augmented Reality, there are some bugs o
 </center>
 
 Thank you :)
+
+## Similar application
+
+You can see in the repository below another marker detection application which uses [Vuforia](https://library.vuforia.com/) library.
+
+[https://github.com/RivoLink/Vuforia-Android](https://github.com/RivoLink/Vuforia-Android)
+
+
