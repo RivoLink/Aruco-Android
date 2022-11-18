@@ -8,7 +8,6 @@ import org.opencv.android.OpenCVLoader;
 import org.opencv.core.Mat;
 import org.opencv.imgproc.Imgproc;
 
-import android.app.Activity;
 import android.app.ProgressDialog;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -21,7 +20,9 @@ import android.view.View.OnTouchListener;
 import android.view.WindowManager;
 import android.widget.Toast;
 
-public class CameraCalibrationActivity extends Activity 
+import android.support.v7.app.AppCompatActivity;
+
+public class CameraCalibrationActivity extends AppCompatActivity 
 	implements OnTouchListener, CvCameraViewListener2, CameraCalibrator.OnAddFrameListener {
 		
 	private Mat rgb;
@@ -50,7 +51,7 @@ public class CameraCalibrationActivity extends Activity
 
         setContentView(R.layout.camera_calibration_layout);
 
-        camera = findViewById(R.id.camera_calibration_camera);
+        camera = (CameraBridgeViewBase)findViewById(R.id.camera_calibration_camera);
         camera.setVisibility(SurfaceView.VISIBLE);
         camera.setCvCameraViewListener(this);
     }
@@ -81,63 +82,47 @@ public class CameraCalibrationActivity extends Activity
             camera.disableView();
     }
 	
-	@Override
-    public boolean onCreateOptionsMenu(Menu menu){
-        super.onCreateOptionsMenu(menu);
-        getMenuInflater().inflate(R.menu.camera_calibration_menu, menu);
+	public void onCalibrate(View view){
+		if(!calibrator.canCalibrate()){
+			Toast.makeText(this, getString(R.string.error_more_frames), Toast.LENGTH_SHORT).show();
+		}
+		else {
+			new AsyncTask<Void,Void,Void>(){
+				private double error=0;
+				private ProgressDialog progress;
 
-        return true;
-    }
-
-	@Override
-	public boolean onOptionsItemSelected(MenuItem item){
-		switch(item.getItemId()){
-			case R.id.calibrate:{
-				if(!calibrator.canCalibrate()){
-					Toast.makeText(this, getString(R.string.error_more_frames), Toast.LENGTH_SHORT).show();
-					return true;
+				@Override
+				protected void onPreExecute(){
+					progress = new ProgressDialog(CameraCalibrationActivity.this);
+					progress.setTitle(getString(R.string.calibrating));
+					progress.setMessage(getString(R.string.please_wait));
+					progress.setCancelable(false);
+					progress.setIndeterminate(true);
+					progress.show();
 				}
-					
-				new AsyncTask<Void,Void,Void>(){
-					private double error=0;
-					private ProgressDialog progress;
 
-					@Override
-					protected void onPreExecute(){
-						progress = new ProgressDialog(CameraCalibrationActivity.this);
-						progress.setTitle(getString(R.string.calibrating));
-						progress.setMessage(getString(R.string.please_wait));
-						progress.setCancelable(false);
-						progress.setIndeterminate(true);
-						progress.show();
-					}
+				@Override
+				protected Void doInBackground(Void... arg0){
+					error = calibrator.calibrate();
+					return null;
+				}
 
-					@Override
-					protected Void doInBackground(Void... arg0){
-						error = calibrator.calibrate();
-						return null;
-					}
+				@Override
+				protected void onPostExecute(Void result){
+					progress.dismiss();
+					calibrator.clear();
 
-					@Override
-					protected void onPostExecute(Void result){
-						progress.dismiss();
-						calibrator.clear();
-						
-						CalibrationResult.save(
-							CameraCalibrationActivity.this,
-							calibrator.getCameraMatrix(),
-							calibrator.getDistorsionCoefficients()
-						);
-						
-						String resultMessage = getString(R.string.success_calibration) + error;
-						Toast.makeText(CameraCalibrationActivity.this, resultMessage, Toast.LENGTH_SHORT).show();
-						
-					}
-				}.execute();
-				return true;
-			}
-			default:
-				return super.onOptionsItemSelected(item);
+					CalibrationResult.save(
+						CameraCalibrationActivity.this,
+						calibrator.getCameraMatrix(),
+						calibrator.getDistorsionCoefficients()
+					);
+
+					String resultMessage = getString(R.string.success_calibration) + error;
+					Toast.makeText(CameraCalibrationActivity.this, resultMessage, Toast.LENGTH_SHORT).show();
+
+				}
+			}.execute();
 		}
 	}
 
