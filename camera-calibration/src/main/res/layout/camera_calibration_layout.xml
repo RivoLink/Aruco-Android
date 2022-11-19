@@ -13,11 +13,11 @@
 		android:layout_width="match_parent"
 		android:layout_height="match_parent">
 		
-		<org.opencv.android.JavaCameraView
+		<mg.rivolink.app.aruco.camera.calibration.view.PortraitCameraLayout
+			android:id="@+id/camera_layout"
 			android:layout_width="match_parent"
-			android:layout_height="match_parent"
-			android:id="@+id/camera_calibration_camera" />
-
+			android:layout_height="match_parent"/>
+		
 	</LinearLayout>
 
 	<LinearLayout

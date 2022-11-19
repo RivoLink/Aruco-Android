@@ -22,6 +22,8 @@ import android.widget.Toast;
 import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 
+import mg.rivolink.app.aruco.camera.calibration.view.PortraitCameraLayout;
+
 public class CameraCalibrationActivity extends AppCompatActivity 
 	implements OnTouchListener, CvCameraViewListener2, CameraCalibrator.OnAddFrameListener {
 		
@@ -51,7 +53,7 @@ public class CameraCalibrationActivity extends AppCompatActivity
 
         setContentView(R.layout.camera_calibration_layout);
 
-        camera = (CameraBridgeViewBase)findViewById(R.id.camera_calibration_camera);
+		camera = ((PortraitCameraLayout)findViewById(R.id.camera_layout)).getCamera();
         camera.setVisibility(SurfaceView.VISIBLE);
         camera.setCvCameraViewListener(this);
     }
