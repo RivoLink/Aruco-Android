@@ -19,7 +19,7 @@ import android.view.View;
 import android.view.View.OnTouchListener;
 import android.view.WindowManager;
 import android.widget.Toast;
-
+import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 
 public class CameraCalibrationActivity extends AppCompatActivity 
@@ -81,6 +81,11 @@ public class CameraCalibrationActivity extends AppCompatActivity
         if(camera != null)
             camera.disableView();
     }
+	
+	@Override
+	public void onActivityResult(int requestCode, int resultCode, Intent data){
+		CalibrationResult.onActivityResult(this, requestCode, resultCode, data);
+	}
 	
 	public void onCalibrate(View view){
 		if(!calibrator.canCalibrate()){
