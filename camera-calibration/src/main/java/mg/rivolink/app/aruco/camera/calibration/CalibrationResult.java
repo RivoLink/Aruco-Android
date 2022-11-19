@@ -75,10 +75,10 @@ public abstract class CalibrationResult {
 				output.flush();
 				output.close();
 				
-				Toast.makeText(context, "Success: Camera params saved", Toast.LENGTH_SHORT).show();
+				Toast.makeText(context, context.getString(R.string.success_camera_params_saving), Toast.LENGTH_SHORT).show();
 			}
 			catch(IOException e) {
-				Toast.makeText(context, "Error: Can't save camera params", Toast.LENGTH_SHORT).show();
+				Toast.makeText(context, context.getString(R.string.error_camera_params_saving), Toast.LENGTH_SHORT).show();
 			}
 		}
 	}
