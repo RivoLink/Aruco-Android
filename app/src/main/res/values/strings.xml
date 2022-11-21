@@ -2,8 +2,9 @@
 <resources>
     <string name="app_name">Aruco Android</string>
 	<string name="success_ocv_loading">Success: OpenCV loaded.</string>
+	<string name="success_camera_params">Success: Camera params loaded.</string>
 	<string name="info_detecting_markers">Info: Detecting markers...</string>
 	<string name="info_no_marker">Info: No marker detected."</string>
-	<string name="error_native_lib">Error: libopencv_java3.so not found for this platform."</string>
-	<string name="error_camera_params">Error: Can\'t load camera parameters."</string>
+	<string name="error_native_lib">Error: libopencv_java3.so not found for this platform.</string>
+	<string name="error_camera_params">Camera params file not found, please select file."</string>
 </resources>

@@ -1,6 +1,10 @@
 package mg.rivolink.app.aruco;
 
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.content.Intent;
+import android.content.DialogInterface;
+
 import android.os.Bundle;
 import android.view.WindowManager;
 import android.widget.Toast;
@@ -44,21 +48,24 @@ public class MainActivity extends Activity implements CvCameraViewListener2 {
 
 	private Renderer3D renderer;
 	private CameraBridgeViewBase camera;
-
+	
 	private final BaseLoaderCallback loaderCallback = new BaseLoaderCallback(this){
         @Override
         public void onManagerConnected(int status){
 			if(status == LoaderCallbackInterface.SUCCESS){
-				String message = "";
-
-				if (loadCameraParams())
-					message = getString(R.string.success_ocv_loading);
-				else
-					message = getString(R.string.error_camera_params);
-
+				Activity activity = MainActivity.this;
+				
+				cameraMatrix = Mat.eye(3, 3, CvType.CV_64FC1);
+				distCoeffs = Mat.zeros(5, 1, CvType.CV_64FC1);
+				
+				if(CameraParameters.fileExists(activity)){
+					CameraParameters.tryLoad(activity, cameraMatrix, distCoeffs);
+				}
+				else {
+					CameraParameters.selectFile(activity);
+				}
+				
 				camera.enableView();
-
-				Toast.makeText(MainActivity.this,  message,  Toast.LENGTH_SHORT).show();
 			}
 			else {
 				super.onManagerConnected(status);
@@ -86,6 +93,11 @@ public class MainActivity extends Activity implements CvCameraViewListener2 {
 	}
 
 	@Override
+	protected void onActivityResult(int requestCode, int resultCode, Intent data){
+		CameraParameters.onActivityResult(this, requestCode, resultCode, data, cameraMatrix, distCoeffs);
+	}
+
+	@Override
     public void onResume(){
         super.onResume();
 
@@ -94,13 +106,7 @@ public class MainActivity extends Activity implements CvCameraViewListener2 {
 		else
 			Toast.makeText(this, getString(R.string.error_native_lib), Toast.LENGTH_LONG).show();
     }
-
-	private boolean loadCameraParams(){
-		cameraMatrix = Mat.eye(3, 3, CvType.CV_64FC1);
-        distCoeffs = Mat.zeros(5, 1, CvType.CV_64FC1);
-		return CameraParameters.tryLoad(this, cameraMatrix, distCoeffs);
-	}
-
+	
 	@Override
     public void onPause(){
         super.onPause();
@@ -127,6 +133,10 @@ public class MainActivity extends Activity implements CvCameraViewListener2 {
 
 	@Override
 	public Mat onCameraFrame(CameraBridgeViewBase.CvCameraViewFrame inputFrame){
+		if(!CameraParameters.isLoaded()){
+			return inputFrame.rgba();
+		}
+		
 		Imgproc.cvtColor(inputFrame.rgba(), rgb, Imgproc.COLOR_RGBA2RGB);
 		gray = inputFrame.gray();
 
@@ -146,7 +156,6 @@ public class MainActivity extends Activity implements CvCameraViewListener2 {
 				transformModel(tvecs.row(0), rvecs.row(0));
 				Aruco.drawAxis(rgb, cameraMatrix, distCoeffs, rvecs.row(i), tvecs.row(i), 0.02f);
 			}
-
 		}
 
 		return rgb;
