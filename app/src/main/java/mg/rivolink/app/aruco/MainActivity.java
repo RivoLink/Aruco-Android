@@ -16,6 +16,7 @@ import java.util.List;
 
 import mg.rivolink.app.aruco.renderer.Renderer3D;
 import mg.rivolink.app.aruco.utils.CameraParameters;
+import mg.rivolink.app.aruco.view.PortraitCameraLayout;
 
 import org.opencv.android.BaseLoaderCallback;
 import org.opencv.android.CameraBridgeViewBase;
@@ -31,7 +32,6 @@ import org.opencv.core.MatOfInt;
 import org.opencv.imgproc.Imgproc;
 
 import org.rajawali3d.view.SurfaceView;
-
 
 public class MainActivity extends AppCompatActivity implements CvCameraViewListener2 {
 
@@ -83,7 +83,7 @@ public class MainActivity extends AppCompatActivity implements CvCameraViewListe
 
         setContentView(R.layout.main_layout);
 
-        camera = (CameraBridgeViewBase)findViewById(R.id.main_camera);
+        camera = ((PortraitCameraLayout)findViewById(R.id.camera_layout)).getCamera();
         camera.setVisibility(SurfaceView.VISIBLE);
         camera.setCvCameraViewListener(this);
 
