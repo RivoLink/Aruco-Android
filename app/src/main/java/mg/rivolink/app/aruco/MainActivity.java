@@ -6,6 +6,8 @@ import android.content.Intent;
 import android.content.DialogInterface;
 
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
+
 import android.view.WindowManager;
 import android.widget.Toast;
 
@@ -30,7 +32,8 @@ import org.opencv.imgproc.Imgproc;
 
 import org.rajawali3d.view.SurfaceView;
 
-public class MainActivity extends Activity implements CvCameraViewListener2 {
+
+public class MainActivity extends AppCompatActivity implements CvCameraViewListener2 {
 
 	private Mat cameraMatrix;
 	private Mat distCoeffs;
@@ -80,13 +83,13 @@ public class MainActivity extends Activity implements CvCameraViewListener2 {
 
         setContentView(R.layout.main_layout);
 
-        camera = findViewById(R.id.main_camera);
+        camera = (CameraBridgeViewBase)findViewById(R.id.main_camera);
         camera.setVisibility(SurfaceView.VISIBLE);
         camera.setCvCameraViewListener(this);
 
 		renderer = new Renderer3D(this);
 
-		SurfaceView surface = findViewById(R.id.main_surface);
+		SurfaceView surface = (SurfaceView)findViewById(R.id.main_surface);
 		surface.setTransparent(true);
 		surface.setSurfaceRenderer(renderer);
 
