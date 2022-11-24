@@ -11,6 +11,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.view.WindowManager;
 import android.widget.Toast;
 
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -26,17 +27,26 @@ import org.opencv.android.OpenCVLoader;
 import org.opencv.aruco.Aruco;
 import org.opencv.aruco.DetectorParameters;
 import org.opencv.aruco.Dictionary;
+import org.opencv.calib3d.Calib3d;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
+import org.opencv.core.MatOfDouble;
 import org.opencv.core.MatOfInt;
+import org.opencv.core.MatOfPoint2f;
+import org.opencv.core.MatOfPoint3f;
+import org.opencv.core.Point;
+import org.opencv.core.Point3;
+import org.opencv.core.Scalar;
 import org.opencv.imgproc.Imgproc;
 
 import org.rajawali3d.view.SurfaceView;
 
 public class MainActivity extends AppCompatActivity implements CvCameraViewListener2 {
 
+	public static final float SIZE = 0.04f;
+	
 	private Mat cameraMatrix;
-	private Mat distCoeffs;
+	private MatOfDouble distCoeffs;
 
 	private Mat rgb;
 	private Mat gray;
@@ -59,7 +69,7 @@ public class MainActivity extends AppCompatActivity implements CvCameraViewListe
 				Activity activity = MainActivity.this;
 				
 				cameraMatrix = Mat.eye(3, 3, CvType.CV_64FC1);
-				distCoeffs = Mat.zeros(5, 1, CvType.CV_64FC1);
+				distCoeffs = new MatOfDouble(Mat.zeros(5, 1, CvType.CV_64FC1));
 				
 				if(CameraParameters.fileExists(activity)){
 					CameraParameters.tryLoad(activity, cameraMatrix, distCoeffs);
@@ -154,10 +164,10 @@ public class MainActivity extends AppCompatActivity implements CvCameraViewListe
 			rvecs = new Mat();
 			tvecs = new Mat();
 
-			Aruco.estimatePoseSingleMarkers(corners, 0.04f, cameraMatrix, distCoeffs, rvecs, tvecs);
+			Aruco.estimatePoseSingleMarkers(corners, SIZE, cameraMatrix, distCoeffs, rvecs, tvecs);
 			for(int i = 0;i<ids.toArray().length;i++){
-				transformModel(tvecs.row(0), rvecs.row(0));
-				Aruco.drawAxis(rgb, cameraMatrix, distCoeffs, rvecs.row(i), tvecs.row(i), 0.02f);
+				draw3dCube(rgb, cameraMatrix, distCoeffs, rvecs.row(i), tvecs.row(i), new Scalar(255, 0, 0));
+				Aruco.drawAxis(rgb, cameraMatrix, distCoeffs, rvecs.row(i), tvecs.row(i), SIZE/2.0f);
 			}
 		}
 
@@ -167,6 +177,34 @@ public class MainActivity extends AppCompatActivity implements CvCameraViewListe
 	@Override
 	public void onCameraViewStopped(){
 		rgb.release();
+	}
+	
+	public void draw3dCube(Mat frame, Mat cameraMatrix, MatOfDouble distCoeffs, Mat rvec, Mat tvec, Scalar color){
+		double halfSize = SIZE/2.0;
+
+		List<Point3> points = new ArrayList<Point3>();
+		points.add(new Point3(-halfSize, -halfSize, 0));
+		points.add(new Point3(-halfSize,  halfSize, 0));
+		points.add(new Point3( halfSize,  halfSize, 0));
+		points.add(new Point3( halfSize, -halfSize, 0));
+		points.add(new Point3(-halfSize, -halfSize, SIZE));
+		points.add(new Point3(-halfSize,  halfSize, SIZE));
+		points.add(new Point3( halfSize,  halfSize, SIZE));
+		points.add(new Point3( halfSize, -halfSize, SIZE));
+
+		MatOfPoint3f cubePoints = new MatOfPoint3f();
+		cubePoints.fromList(points);
+
+		MatOfPoint2f projectedPoints = new MatOfPoint2f();
+		Calib3d.projectPoints(cubePoints, rvec, tvec, cameraMatrix, distCoeffs, projectedPoints);
+
+		List<Point> pts = projectedPoints.toList();
+
+	    for(int i=0; i<4; i++){
+	        Imgproc.line(frame, pts.get(i), pts.get((i+1)%4), color, 2);
+	        Imgproc.line(frame, pts.get(i+4), pts.get(4+(i+1)%4), color, 2);
+	        Imgproc.line(frame, pts.get(i), pts.get(i+4), color, 2);
+	    }	        
 	}
 	
 	private void transformModel(final Mat tvec, final Mat rvec){
@@ -185,6 +223,7 @@ public class MainActivity extends AppCompatActivity implements CvCameraViewListe
 			}
 		});
 	}
+	
 }
 
 
