@@ -4,11 +4,13 @@
 	
 	<string name="success_ocv_loading">Success: OpenCV loaded.</string>
 	<string name="success_calibration">Success: Calibrated with prediction error: </string>
-    <string name="success_adding_frame">Success: Frame added.</string>
+	<string name="success_adding_frame">Success: Frame added.</string>
+	<string name="success_camera_params_saving">Success: Camera params saved</string>
 	
 	<string name="error_native_lib">Error: libopencv_java3.so not found for this platform."</string>
     <string name="error_more_frames">Error: Capture more frames.</string>
 	<string name="error_no_marker_detected">Error: No marker detected in this frame</string>
+	<string name="error_camera_params_saving">Error: Can\'t save camera params</string>
 	
 	<string name="calibrating">Calibrating...</string>
     <string name="please_wait">Please, wait</string>
