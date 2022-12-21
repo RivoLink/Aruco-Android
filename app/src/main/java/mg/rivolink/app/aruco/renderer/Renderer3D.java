@@ -10,6 +10,7 @@ import org.rajawali3d.loader.ParsingException;
 import org.rajawali3d.renderer.Renderer;
 
 import mg.rivolink.app.aruco.R;
+import org.rajawali3d.math.*;
 
 public class Renderer3D extends Renderer {
 
@@ -32,11 +33,23 @@ public class Renderer3D extends Renderer {
 			objParser.parse();
 
 			model = objParser.getParsedObject();
-			model.setPosition(0, 0, -10);
+			model.setPosition(0, 0, 0);
 			model.setVisible(false);
+			//model.setVisible(true);
+			
 
 			getCurrentScene().addLight(light);
 			getCurrentScene().addChild(model);
+			
+			//getCurrentScene().
+			
+			//getCurrentScene().
+			
+			getCurrentCamera().enableLookAt();
+			getCurrentCamera().setLookAt(0, 0, 0);
+			//getCurrentCamera().setUpAxis(0,1,0);
+			getCurrentCamera().setPosition(0, 0, 50);
+			//getCurrentCamera().setScaleZ
 
 		}
 		catch(ParsingException e){
@@ -45,17 +58,20 @@ public class Renderer3D extends Renderer {
 	}
 
 	public void transform(double tx, double ty, double tz, double yaw, double pitch, double roll){
-		/* Some bugs here
+		/* Some bugs here */
 		if(!model.isVisible())
 			model.setVisible(true);
 
-		model.setPosition(tx, ty, tz);
-		model.setOrientation(new Quaternion().fromEuler(
+		//model.setPosition(0, 0, 0);
+		//model.setPosition(tx, ty, tz);
+		model.setRotation(new Quaternion().fromEuler(yaw,roll, -pitch));
+		//model.setOrientation(new Quaternion().fromEuler(yaw,roll, -pitch));
+		/*model.setOrientation(new Quaternion().fromEuler(
 			Math.toDegrees(yaw),
 			Math.toDegrees(pitch),
 			Math.toDegrees(roll)
-		));
-		*/
+		));*/
+		
 	}
 
 	@Override
