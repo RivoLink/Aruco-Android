@@ -5,20 +5,18 @@
 	android:layout_width="match_parent"
 	android:layout_height="match_parent">
 
-	<org.opencv.android.JavaCameraView
-		android:id="@+id/main_camera"
+	<mg.rivolink.app.aruco.view.PortraitCameraLayout
+		android:id="@+id/camera_layout"
 		android:layout_width="match_parent"
-		android:layout_height="match_parent"
-		android:layout_centerInParent="true"/>
+		android:layout_height="match_parent"/>
 
 	<org.rajawali3d.view.SurfaceView
-        android:id="@+id/main_surface"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
+		android:id="@+id/main_surface"
+		android:layout_width="match_parent"
+		android:layout_height="match_parent"
 		android:layout_centerInParent="true"
-        app:frameRate="60.0"
-        app:renderMode="RENDER_WHEN_DIRTY"/>
+		app:frameRate="60.0"
+		app:renderMode="RENDER_WHEN_DIRTY"/>
 
 </RelativeLayout>
-
 
