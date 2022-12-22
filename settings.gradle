@@ -1,1 +1,1 @@
-include ':app', ':camera-calibration', ':opencv344-contrib'
+include ':app', ':aruco-min3d', ':camera-calibration', ':opencv344-contrib'

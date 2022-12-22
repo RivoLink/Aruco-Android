@@ -21,6 +21,7 @@ android {
 
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
+	implementation project(':aruco-min3d')
 	implementation project(':opencv344-contrib')
 	implementation 'org.rajawali3d:rajawali:1.1.970'
 	implementation 'com.android.support:design:25.3.1'
