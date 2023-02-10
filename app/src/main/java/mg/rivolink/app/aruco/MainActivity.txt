@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.content.DialogInterface;
 
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 
 import android.view.WindowManager;
 import android.widget.Toast;
@@ -14,6 +15,7 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
+import mg.rivolink.app.aruco.renderer.Renderer3D;
 import mg.rivolink.app.aruco.utils.CameraParameters;
 import mg.rivolink.app.aruco.view.PortraitCameraLayout;
 
@@ -36,18 +38,13 @@ import org.opencv.core.Point;
 import org.opencv.core.Point3;
 import org.opencv.core.Scalar;
 import org.opencv.imgproc.Imgproc;
-import android.view.*;
-import min3d.vos.*;
-import min3d.core.*;
-import min3d.objectPrimitives.*;
-import android.widget.*;
-import android.graphics.*;
-import org.opencv.core.*;
 
-public class MainActivity extends Min3dActivity implements CvCameraViewListener2 {
+import org.rajawali3d.view.SurfaceView;
+
+public class MainActivity extends AppCompatActivity implements CvCameraViewListener2 {
 
 	public static final float SIZE = 0.04f;
-
+	
 	private Mat cameraMatrix;
 	private MatOfDouble distCoeffs;
 
@@ -62,26 +59,25 @@ public class MainActivity extends Min3dActivity implements CvCameraViewListener2
 	private Dictionary dictionary;
 	private DetectorParameters parameters;
 
+	private Renderer3D renderer;
 	private CameraBridgeViewBase camera;
-
-	private Object3dContainer cube;
-
+	
 	private final BaseLoaderCallback loaderCallback = new BaseLoaderCallback(this){
         @Override
         public void onManagerConnected(int status){
 			if(status == LoaderCallbackInterface.SUCCESS){
 				Activity activity = MainActivity.this;
-
+				
 				cameraMatrix = Mat.eye(3, 3, CvType.CV_64FC1);
 				distCoeffs = new MatOfDouble(Mat.zeros(5, 1, CvType.CV_64FC1));
-
+				
 				if(CameraParameters.fileExists(activity)){
 					CameraParameters.tryLoad(activity, cameraMatrix, distCoeffs);
 				}
 				else {
 					CameraParameters.selectFile(activity);
 				}
-
+				
 				camera.enableView();
 			}
 			else {
@@ -90,46 +86,24 @@ public class MainActivity extends Min3dActivity implements CvCameraViewListener2
         }
     };
 
-	@Override
-	protected void onCreateSetContentView(){
+    @Override
+    protected void onCreate(Bundle savedInstanceState){
+        super.onCreate(savedInstanceState);
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 
         setContentView(R.layout.main_layout);
 
         camera = ((PortraitCameraLayout)findViewById(R.id.camera_layout)).getCamera();
-        camera.setVisibility(View.VISIBLE);
+        camera.setVisibility(SurfaceView.VISIBLE);
         camera.setCvCameraViewListener(this);
 
-		LinearLayout surface_layout = (LinearLayout)findViewById(R.id.surface_layout);
-		surface_layout.addView(_glSurfaceView);
+		renderer = new Renderer3D(this);
+
+		SurfaceView surface = (SurfaceView)findViewById(R.id.main_surface);
+		surface.setTransparent(true);
+		surface.setSurfaceRenderer(renderer);
+
 	}
-
-	@Override
-	protected void glSurfaceViewConfig(){
-		_glSurfaceView.setEGLConfigChooser(8, 8, 8, 8, 16, 0);
-		_glSurfaceView.getHolder().setFormat(PixelFormat.TRANSLUCENT);
-	}	
-
-	@Override
-	public void initScene(){
-		cube = new Box(1, 1, 1);
-		cube.colorMaterialEnabled(true);
-
-		scene.addChild(cube);
-		scene.lights().add(new Light());
-		scene.backgroundColor().setAll(0x00000000);
-	}
-
-	@Override
-	public void updateScene(){
-		/*if(point != null){
-		 cube.position().set
-		 //cube.position().y = y;
-		 }
-		 cube.rotation().
-		 scene.camera().target.setAll(0.5f, 0.5f, 0.5f);
-		 */
-	}	
 
 	@Override
 	protected void onActivityResult(int requestCode, int resultCode, Intent data){
@@ -145,7 +119,7 @@ public class MainActivity extends Min3dActivity implements CvCameraViewListener2
 		else
 			Toast.makeText(this, getString(R.string.error_native_lib), Toast.LENGTH_LONG).show();
     }
-
+	
 	@Override
     public void onPause(){
         super.onPause();
@@ -175,7 +149,7 @@ public class MainActivity extends Min3dActivity implements CvCameraViewListener2
 		if(!CameraParameters.isLoaded()){
 			return inputFrame.rgba();
 		}
-
+		
 		Imgproc.cvtColor(inputFrame.rgba(), rgb, Imgproc.COLOR_RGBA2RGB);
 		gray = inputFrame.gray();
 
@@ -192,65 +166,19 @@ public class MainActivity extends Min3dActivity implements CvCameraViewListener2
 
 			Aruco.estimatePoseSingleMarkers(corners, SIZE, cameraMatrix, distCoeffs, rvecs, tvecs);
 			for(int i = 0;i<ids.toArray().length;i++){
-				Mat rvec = rvecs.row(i);
-				Mat tvec = tvecs.row(i);
-
-				// Convert rotation vector to rotation matrix
-				Mat rmat = new Mat();
-				Calib3d.Rodrigues(rvec, rmat);
-
-				Mat projMatrix = new Mat(3, 4, CvType.CV_64FC1);
-				projMatrix.put(0, 0, rmat.get(0,0)[0]);
-				projMatrix.put(0, 1, rmat.get(0,1)[0]);
-				projMatrix.put(0, 2, rmat.get(0,2)[0]);
-				projMatrix.put(0, 3, 0);
-				projMatrix.put(1, 0, rmat.get(1,0)[0]);
-				projMatrix.put(1, 1, rmat.get(1,1)[0]);
-				projMatrix.put(1, 2, rmat.get(1,2)[0]);
-				projMatrix.put(1, 3, 0);
-				projMatrix.put(2, 0, rmat.get(2,0)[0]);
-				projMatrix.put(2, 1, rmat.get(2,1)[0]);
-				projMatrix.put(2, 2, rmat.get(2,2)[0]);
-				projMatrix.put(2, 3, 0);
-
-				// Convert rotation matrix to Euler angles
-				Mat eulerAngles = new Mat(3, 1, CvType.CV_16UC4);
-				Calib3d.decomposeProjectionMatrix(
-					projMatrix,
-					new Mat(),
-					new Mat(),
-					new Mat(),
-					new Mat(), 
-					new Mat(), 
-					new Mat(), 
-					eulerAngles
-				);
-
-				// Position and orient the 3D model using the pose information
-				/*cube.position().setAll(
-				 (float)tvec.get(0,0)[0], 
-				 (float)tvec.get(1,0)[0],
-				 (float)tvec.get(2,0)[0]
-				 );*/
-				cube.rotation().setAll(
-					(float)eulerAngles.get(0,0)[0], 
-					(float)eulerAngles.get(1,0)[0],
-					(float)eulerAngles.get(2,0)[0]
-				);
+				draw3dCube(rgb, cameraMatrix, distCoeffs, rvecs.row(i), tvecs.row(i), new Scalar(255, 0, 0));
+				Aruco.drawAxis(rgb, cameraMatrix, distCoeffs, rvecs.row(i), tvecs.row(i), SIZE/2.0f);
 			}
-
-			//renderer.drawFrame();
 		}
 
 		return rgb;
 	}
 
-
 	@Override
 	public void onCameraViewStopped(){
 		rgb.release();
 	}
-
+	
 	public void draw3dCube(Mat frame, Mat cameraMatrix, MatOfDouble distCoeffs, Mat rvec, Mat tvec, Scalar color){
 		double halfSize = SIZE/2.0;
 
@@ -278,7 +206,24 @@ public class MainActivity extends Min3dActivity implements CvCameraViewListener2
 	        Imgproc.line(frame, pts.get(i), pts.get(i+4), color, 2);
 	    }	        
 	}
-
+	
+	private void transformModel(final Mat tvec, final Mat rvec){
+		runOnUiThread(new Runnable(){
+			@Override
+			public void run(){
+				renderer.transform(
+					tvec.get(0, 0)[0]*50,
+					-tvec.get(0, 0)[1]*50,
+					-tvec.get(0, 0)[2]*50,
+				
+					rvec.get(0, 0)[2], //yaw
+					rvec.get(0, 0)[1], //pitch
+					rvec.get(0, 0)[0] //roll
+				);
+			}
+		});
+	}
+	
 }
 
 

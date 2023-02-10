@@ -9,14 +9,12 @@
 		android:id="@+id/camera_layout"
 		android:layout_width="match_parent"
 		android:layout_height="match_parent"/>
-
-	<org.rajawali3d.view.SurfaceView
-		android:id="@+id/main_surface"
+	
+	<LinearLayout
+		android:id="@+id/surface_layout"
 		android:layout_width="match_parent"
 		android:layout_height="match_parent"
-		android:layout_centerInParent="true"
-		app:frameRate="60.0"
-		app:renderMode="RENDER_WHEN_DIRTY"/>
+	/>
 
 </RelativeLayout>
 
