@@ -1,7 +1,6 @@
 package mg.rivolink.app.aruco;
 
 import android.app.Activity;
-import android.content.Intent;
 
 import android.os.Bundle;
 import android.net.Uri;
@@ -9,13 +8,12 @@ import android.net.Uri;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 
+import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.ImageView;
 
 import java.io.InputStream;
-import java.io.FileNotFoundException;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.LinkedList;
 
@@ -24,16 +22,9 @@ import org.opencv.android.OpenCVLoader;
 import org.opencv.android.BaseLoaderCallback;
 import org.opencv.android.LoaderCallbackInterface;
 
-import org.opencv.calib3d.Calib3d;
 import org.opencv.core.Mat;
-import org.opencv.core.MatOfDouble;
 import org.opencv.core.MatOfInt;
 import org.opencv.core.CvType;
-import org.opencv.core.MatOfPoint2f;
-import org.opencv.core.MatOfPoint3f;
-import org.opencv.core.Point;
-import org.opencv.core.Point3;
-import org.opencv.core.Scalar;
 import org.opencv.imgproc.Imgproc;
 
 import org.opencv.aruco.Aruco;
@@ -44,10 +35,15 @@ import mg.rivolink.app.aruco.utils.CameraParameters;
 
 public class ImageActivity extends Activity {
 
+	private static String coords;
+
 	private static Mat cameraMatrix;
+
 	private static Mat distCoeffs;
 
+	private TextView textView;
 	private ImageView imageView;
+
 	private Bitmap originalBMP;
 
 	private final BaseLoaderCallback loaderCallback = new BaseLoaderCallback(this){
@@ -77,6 +73,7 @@ public class ImageActivity extends Activity {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.image_layout);
 
+		textView = findViewById(R.id.text_view);
 		imageView = findViewById(R.id.image_view);
 
 		if(getIntent().getData() != null) try {
@@ -117,10 +114,13 @@ public class ImageActivity extends Activity {
 				ImageActivity.this.runOnUiThread(new Runnable(){
 					@Override
 					public void run() {
-						if(bitmap != null)
+						if(bitmap != null){
+							textView.setText(coords);
 							imageView.setImageBitmap(bitmap);
-						else
+						}
+						else {
 							Toast.makeText(ImageActivity.this, getString(R.string.info_no_marker), Toast.LENGTH_SHORT).show();
+						}
 					}
 				});
 			}
@@ -154,34 +154,15 @@ public class ImageActivity extends Activity {
 
 			Aruco.estimatePoseSingleMarkers(corners, 0.04f, cameraMatrix, distCoeffs, rvecs, tvecs);
 
-			List<Point3> corners4 = new ArrayList<>(4);
-			corners4.add(new Point3(-0.02f,0.02f,0));		// Top-Left
-			corners4.add(new Point3(0.02f,0.02f,0));		// Top-Right
-			corners4.add(new Point3(-0.02f,-0.02f,0));		// Bottom-Left
-			corners4.add(new Point3(0.02f,-0.02f,0));		// Bottom-Right
+			if(ids.toArray().length > 0){
+				Mat tvec = tvecs.row(0);
 
-			MatOfPoint3f mcorners = new MatOfPoint3f();
-			mcorners.fromList(corners4);
+				float x = (float)tvec.get(0,0)[0];
+				float y = (float)tvec.get(0,0)[1];
+				float z = (float)tvec.get(0,0)[2];
 
-			distCoeffs = new MatOfDouble(distCoeffs);
-
-			for(int i = 0; i < ids.toArray().length; i++){
-				Aruco.drawAxis(rgb, cameraMatrix, distCoeffs, rvecs.row(i), tvecs.row(i), 0.02f);
-
-				MatOfPoint2f projected = new MatOfPoint2f();
-				Calib3d.projectPoints(mcorners, rvecs.row(i), tvecs.row(i), cameraMatrix, (MatOfDouble)distCoeffs, projected);
-
-				Point[] points = projected.toArray();
-				projected.release();
-
-				if(points != null){
-					for(Point point:points){
-						Imgproc.circle(rgb, point, 10, new Scalar(0, 255, 0, 150), 4);
-					}
-				}
+				coords = String.format("(x: %.2f; y: %.2f; z: %.2f)", x, y, z);
 			}
-
-			mcorners.release();
 
 			rvecs.release();
 			tvecs.release();

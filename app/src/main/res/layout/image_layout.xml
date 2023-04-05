@@ -4,7 +4,15 @@
 	android:layout_width="match_parent"
 	android:layout_height="match_parent"
 	android:orientation="vertical"
-	android:gravity="center">
+	android:gravity="center"
+	>
+
+	<TextView
+		android:id="@+id/text_view"
+		android:text="Coordinates"
+		android:gravity="center_horizontal"
+		android:layout_width="match_parent"
+		android:layout_height="wrap_content"/>
 
 	<ImageView
 		android:id="@+id/image_view"
