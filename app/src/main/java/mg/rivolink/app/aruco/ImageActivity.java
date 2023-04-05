@@ -22,9 +22,12 @@ import org.opencv.android.OpenCVLoader;
 import org.opencv.android.BaseLoaderCallback;
 import org.opencv.android.LoaderCallbackInterface;
 
+import org.opencv.core.Core;
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfInt;
 import org.opencv.core.CvType;
+import org.opencv.core.Point;
+import org.opencv.core.Scalar;
 import org.opencv.imgproc.Imgproc;
 
 import org.opencv.aruco.Aruco;
@@ -162,6 +165,7 @@ public class ImageActivity extends Activity {
 				float z = (float)tvec.get(0,0)[2];
 
 				coords = String.format("(x: %.2f; y: %.2f; z: %.2f)", x, y, z);
+				Imgproc.putText(rgb, coords, new Point(10, 30), Core.FONT_HERSHEY_SIMPLEX, 1.0, new Scalar(0, 255, 0), 3);
 			}
 
 			rvecs.release();
