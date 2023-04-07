@@ -10,13 +10,11 @@
 		android:layout_width="match_parent"
 		android:layout_height="match_parent"/>
 
-	<org.rajawali3d.view.SurfaceView
+	<android.opengl.GLSurfaceView
 		android:id="@+id/main_surface"
 		android:layout_width="match_parent"
 		android:layout_height="match_parent"
-		android:layout_centerInParent="true"
-		app:frameRate="60.0"
-		app:renderMode="RENDER_WHEN_DIRTY"/>
+		android:layout_centerInParent="true"/>
 
 </RelativeLayout>
 

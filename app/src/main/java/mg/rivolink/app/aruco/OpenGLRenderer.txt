@@ -1,0 +1,217 @@
+public class OpenGLRenderer implements GLSurfaceView.Renderer {
+
+        private Context mContext;
+
+        private int mProgramId;
+        private int mPositionHandle;
+        private int mColorHandle;
+        private int mMVPMatrixHandle;
+
+        private float[] mModelMatrix = new float[16];
+        private float[] mViewMatrix = new float[16];
+        private float[] mProjectionMatrix = new float[16];
+        private float[] mMVPMatrix = new float[16];
+
+        private float[] mCubeVertices = {
+                // Front face
+                -1.0f, 1.0f, 1.0f,
+                -1.0f, -1.0f, 1.0f,
+                1.0f, 1.0f, 1.0f,
+                1.0f, -1.0f, 1.0f,
+
+                // Back face
+                -1.0f, 1.0f, -1.0f,
+                -1.0f, -1.0f, -1.0f,
+                1.0f, 1.0f, -1.0f,
+                1.0f, -1.0f, -1.0f,
+
+                // Top face
+                -1.0f, 1.0f, 1.0f,
+                -1.0f, 1.0f, -1.0f,
+                1.0f, 1.0f, 1.0f,
+                1.0f, 1.0f, -1.0f,
+
+                // Bottom face
+                -1.0f, -1.0f, 1.0f,
+                -1.0f, -1.0f, -1.0f,
+                1.0f, -1.0f, 1.0f,
+                1.0f, -1.0f, -1.0f,
+
+                // Right face
+                1.0f, 1.0f, 1.0f,
+                1.0f, -1.0f, 1.0f,
+                1.0f, 1.0f, -1.0f,
+                1.0f, -1.0f, -1.0f,
+
+                // Left face
+                -1.0f, 1.0f, 1.0f,
+                -1.0f, -1.0f, 1.0f,
+                -1.0f, 1.0f, -1.0f,
+                -1.0f, -1.0f, -1.0f
+        };
+
+        private float[] mCubeColors = {
+                // Front face (red)
+                1.0f, 0.0f, 0.0f, 1.0f,
+                1.0f, 0.0f, 0.0f, 1.0f,
+                1.0f, 0.0f, 0.0f, 1.0f,
+                1.0f, 0.0f, 0.0f, 1.0f,
+
+                // Back face (green)
+                0.0f, 1.0f, 0.0f, 1.0f,
+                0.0f, 1.0f, 0.0f, 1.0f,
+                0.0f, 1.0f, 0.0f, 1.0f,
+                0.0f, 1.0f, 0.0f, 1.0f,
+
+                // Top face (blue)
+                0.0f, 0.0f, 1.0f, 1.0f,
+                0.0f, 0.0f, 1.0f, 1.0f,
+                0.0f, 0.0f, 1.0f, 1.0f,
+                0.0f, 0.0f, 1.0f, 1.0f,
+
+                // Bottom face (yellow)
+                1.0f, 1.0f, 0.0f, 1.0f,
+                1.0f, 1.0f, 0.0f, 1.0f,
+                1.0f, 1.0f, 0.0f, 1.0f,
+                1.0f, 1.0f, 0.0f, 1.0f,
+
+                // Right face (cyan)
+                0.0f, 1.0f, 1.0f, 1.0f,
+                0.0f, 1.0f, 1.0f, 1.0f,
+                0.0f, 1.0f, 1.0f, 1.0f,
+                0.0f, 1.0f, 1.0f, 1.0f,
+
+                // Left face (magenta)
+                1.0f, 0.0f, 1.0f, 1.0f,
+                1.0f, 0.0f, 1.0f, 1.0f,
+                1.0f, 0.0f, 1.0f, 1.0f,
+                1.0f, 0.0f, 1.0f, 1.0f
+        };
+
+        private int mVertexShader;
+        private int mFragmentShader;
+
+        public OpenGLRenderer(Context context) {
+                mContext = context;
+        }
+
+        private int loadShader(int type, String shaderCode) {
+                int shader = GLES20.glCreateShader(type);
+                GLES20.glShaderSource(shader, shaderCode);
+                GLES20.glCompileShader(shader);
+                return shader;
+        }
+
+        String vertexShaderCode = "#version 100\n" +
+            "uniform mat4 uMVPMatrix;\n" +
+            "attribute vec4 aPosition;\n" +
+            "attribute vec4 aColor;\n" +
+            "varying vec4 vColor;\n" +
+            "void main() {\n" +
+            "  gl_Position = uMVPMatrix * aPosition;\n" +
+            "  vColor = aColor;\n" +
+            "}\n";
+
+        String fragmentShaderCode = "#version 100\n" +
+                "precision mediump float;\n" +
+                "varying vec4 vColor;\n" +
+                "void main() {\n" +
+                "  gl_FragColor = vColor;\n" +
+                "}\n";
+
+
+        @Override
+        public void onSurfaceCreated(GL10 gl10, EGLConfig eglConfig) {
+                GLES20.glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+
+                // Load the shaders
+                mVertexShader = ShaderHelper.compileVertexShader(VertexShaderCode);
+                mFragmentShader = ShaderHelper.compileFragmentShader(FragmentShaderCode);
+
+                // Create the OpenGL program
+                mProgramId = ShaderHelper.linkProgram(mVertexShader, mFragmentShader);
+
+                // Set up the position and color attributes
+                mPositionHandle = GLES20.glGetAttribLocation(mProgramId, "a_Position");
+                mColorHandle = GLES20.glGetAttribLocation(mProgramId, "a_Color");
+
+                // Set up the MVP matrix handle
+                mMVPMatrixHandle = GLES20.glGetUniformLocation(mProgramId, "u_MVPMatrix");
+
+                // Set up the view matrix
+                GLES20.glEnableVertexAttribArray(mPositionHandle);
+                GLES20.glEnableVertexAttribArray(mColorHandle);
+        }
+
+        @Override
+        public void onSurfaceCreated_Maybe(GL10 gl, EGLConfig config) {
+                GLES20.glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+
+                String vertexShaderCode = "#version 100\n" +
+                        "uniform mat4 uMVPMatrix;\n" +
+                        "attribute vec4 aPosition;\n" +
+                        "attribute vec4 aColor;\n" +
+                        "varying vec4 vColor;\n" +
+                        "void main() {\n" +
+                        "  gl_Position = uMVPMatrix * aPosition;\n" +
+                        "  vColor = aColor;\n" +
+                        "}\n";
+
+                String fragmentShaderCode = "#version 100\n" +
+                        "precision mediump float;\n" +
+                        "varying vec4 vColor;\n" +
+                        "void main() {\n" +
+                        "  gl_FragColor = vColor;\n" +
+                        "}\n";
+
+                int vertexShader = loadShader(GLES20.GL_VERTEX_SHADER, vertexShaderCode);
+                int fragmentShader = loadShader(GLES20.GL_FRAGMENT_SHADER, fragmentShaderCode);
+
+                mProgramId = GLES20.glCreateProgram();
+                GLES20.glAttachShader(mProgramId, vertexShader);
+                GLES20.glAttachShader(mProgramId, fragmentShader);
+                GLES20.glLinkProgram(mProgramId);
+
+                mPositionHandle = GLES20.glGetAttribLocation(mProgramId, "aPosition");
+                mColorHandle = GLES20.glGetAttribLocation(mProgramId, "aColor");
+                mMVPMatrixHandle = GLES20.glGetUniformLocation(mProgramId, "uMVPMatrix");
+
+                GLES20.glEnableVertexAttribArray(mPositionHandle);
+                GLES20.glEnableVertexAttribArray(mColorHandle);
+        }
+
+        @Override
+        public void onSurfaceChanged(GL10 gl, int width, int height) {
+        GLES20.glViewport(0, 0, width, height);
+
+        float ratio = (float) width / height;
+        Matrix.frustumM(mProjectionMatrix, 0, -ratio, ratio, -1, 1, 3, 7);
+        }
+
+        @Override
+        public void onDrawFrame(GL10 gl) {
+                GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT);
+
+                Matrix.setIdentityM(mModelMatrix, 0);
+                Matrix.translateM(mModelMatrix, 0, 0.0f, 0.0f, -5.0f);
+
+                long time = SystemClock.uptimeMillis() % 4000L;
+                float angle = 0.090f * ((int) time);
+
+                Matrix.rotateM(mModelMatrix, 0, angle, 1.0f, 0.0f, 1.0f);
+
+                Matrix.setLookAtM(mViewMatrix, 0, 0, 0, -5, 0f, 0f, 0f, 0f, 1.0f, 0.0f);
+
+                Matrix.multiplyMM(mMVPMatrix, 0, mProjectionMatrix, 0, mViewMatrix, 0);
+                Matrix.multiplyMM(mMVPMatrix, 0, mMVPMatrix, 0, mModelMatrix, 0);
+
+                GLES20.glUseProgram(mProgramId);
+
+                GLES20.glVertexAttribPointer(mPositionHandle, 3, GLES20.GL_FLOAT, false,
+                        0, ByteBuffer.wrap(mCubeVertices));
+
+                GLES20.glVertexAttribPointer(mColorHandle, 4, GLES20.GL_FLOAT, false, 0, ByteBuffer.wrap(mCubeColors));
+                GLES20.glUniformMatrix4fv(mMVPMatrixHandle, 1, false, mMVPMatrix, 0);
+
+                GLES20.glDrawArrays(GLES20.GL_TRIANGLES, 0, 36);
+        }

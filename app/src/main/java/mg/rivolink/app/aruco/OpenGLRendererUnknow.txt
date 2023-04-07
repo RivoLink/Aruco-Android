@@ -1,0 +1,85 @@
+package mg.rivolink.app.aruco.renderer;
+
+import android.opengl.GLES20;
+import android.opengl.GLSurfaceView.Renderer;
+import android.opengl.Matrix;
+import android.util.Log;
+
+import org.opencv.core.CvType;
+import org.opencv.core.Mat;
+import org.opencv.core.MatOfDouble;
+import org.opencv.core.MatOfFloat;
+import org.opencv.core.MatOfPoint2f;
+import org.opencv.core.MatOfPoint3f;
+import org.opencv.core.Point3;
+import org.opencv.core.Scalar;
+import org.opencv.imgproc.Imgproc;
+import org.opencv.utils.Converters;
+
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
+import java.nio.FloatBuffer;
+import java.nio.ShortBuffer;
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.microedition.khronos.egl.EGLConfig;
+import javax.microedition.khronos.opengles.GL10;
+
+public class OpenGLRenderer implements Renderer {
+
+    private static final String TAG = "OpenGLRenderer";
+
+    private static final int COORDS_PER_VERTEX = 3;
+    private static final int COORDS_PER_COLOR = 4;
+    private static final int BYTES_PER_FLOAT = 4;
+    private static final int BYTES_PER_SHORT = 2;
+
+    private static final String VERTEX_SHADER_CODE =
+            "uniform mat4 uMVPMatrix;" +
+                    "attribute vec4 vPosition;" +
+                    "attribute vec4 aColor;" +
+                    "varying vec4 vColor;" +
+                    "void main() {" +
+                    "  vColor = aColor;" +
+                    "  gl_Position = uMVPMatrix * vPosition;" +
+                    "}";
+
+    private static final String FRAGMENT_SHADER_CODE =
+            "precision mediump float;" +
+                    "varying vec4 vColor;" +
+                    "void main() {" +
+                    "  gl_FragColor = vColor;" +
+                    "}";
+
+    private final List<Mat> markerCorners = new ArrayList<>();
+    private final MatOfInt markerIds = new MatOfInt();
+
+    private final FloatBuffer vertexBuffer;
+    private final ShortBuffer indexBuffer;
+    private final FloatBuffer colorBuffer;
+
+    private int mProgram;
+    private int mPositionHandle;
+    private int mColorHandle;
+    private int mMVPMatrixHandle;
+
+    private int[] textures = new int[1];
+
+    private Mat cameraMatrix;
+    private MatOfDouble distCoeffs;
+
+    private float[] projectionMatrix = new float[16];
+    private float[] viewMatrix = new float[16];
+    private float[] modelMatrix = new float[16];
+    private float[] mvpMatrix = new float[16];
+
+    private final float[] vertexData;
+    private static final short[] indexData;
+    private final float[] colorData;
+
+    public void setData(float[] vertexData, short[] indexData, float[] colorData){
+        this.vertexData = vertexData;
+        this.indexData = indexData;
+        this.colorData = colorData;
+    }
