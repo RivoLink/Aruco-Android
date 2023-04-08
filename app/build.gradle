@@ -24,4 +24,5 @@ dependencies {
 	implementation project(':opencv344-contrib')
 	implementation 'org.rajawali3d:rajawali:1.1.970'
 	implementation 'com.android.support:design:25.3.1'
+    implementation 'commons-io:commons-io:2.5'
 }
