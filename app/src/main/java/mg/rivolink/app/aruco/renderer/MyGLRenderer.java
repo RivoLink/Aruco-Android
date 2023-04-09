@@ -25,10 +25,10 @@ public class MyGLRenderer implements Renderer {
 
     @Override
     public void onSurfaceCreated(GL10 gl10, EGLConfig eglConfig) {
-        GLES20.glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+        GLES20.glClearColor(1.0f, 0.0f, 0.0f, 0.0f);
 
-        glSurfaceView.setRenderMode(GLSurfaceView.RENDERMODE_WHEN_DIRTY);
-        model = new Model3D(context);
+        //glSurfaceView.setRenderMode(GLSurfaceView.RENDERMODE_WHEN_DIRTY);
+        //model = new Model3D(context);
     }
 
     @Override
@@ -38,6 +38,7 @@ public class MyGLRenderer implements Renderer {
 
     @Override
     public void onDrawFrame(GL10 gl10) {
-        model.draw();
+		GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT);
+        //model.draw();
     }
 }

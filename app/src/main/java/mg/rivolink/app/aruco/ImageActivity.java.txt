@@ -41,20 +41,9 @@ import org.opencv.aruco.Dictionary;
 import org.opencv.aruco.DetectorParameters;
 
 import mg.rivolink.app.aruco.utils.CameraParameters;
-import android.opengl.*;
-import mg.rivolink.app.aruco.renderer.CubeRenderer;
-import mg.rivolink.app.aruco.renderer.MyGLRenderer;
 
 public class ImageActivity extends Activity {
-	
-	private static Mat tvec;
-	private static Mat rvec;
 
-	private CubeRenderer cubeRenderer;
-	
-	private GLSurfaceView mySurfaceView;
-	private MyGLRenderer myGLRenderer;
-	
 	private static Mat cameraMatrix;
 	private static Mat distCoeffs;
 
@@ -86,27 +75,10 @@ public class ImageActivity extends Activity {
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		
-		/* 
 		setContentView(R.layout.image_layout);
+
 		imageView = findViewById(R.id.image_view);
-		
-		mySurfaceView = findViewById(R.id.surface_view);
-		mySurfaceView.setEGLContextClientVersion(2);
-		
-		myGLRenderer = new MyGLRenderer(this, mySurfaceView);
-		mySurfaceView.setRenderer(myGLRenderer);
-		*/
-		
-		
-		setContentView(R.layout.cube_layout);
-		
-		imageView = findViewById(R.id.imageview);
-		mySurfaceView = findViewById(R.id.glsurfaceview);
-		
-		cubeRenderer = new CubeRenderer(false);
-		mySurfaceView.setRenderer(cubeRenderer);
-		
+
 		if(getIntent().getData() != null) try {
 			Uri uri=getIntent().getData();
 			InputStream is = getContentResolver().openInputStream(uri);
@@ -145,10 +117,8 @@ public class ImageActivity extends Activity {
 				ImageActivity.this.runOnUiThread(new Runnable(){
 					@Override
 					public void run() {
-						if(bitmap != null){
-							cubeRenderer.setVectors(tvec, rvec);
+						if(bitmap != null)
 							imageView.setImageBitmap(bitmap);
-						}
 						else
 							Toast.makeText(ImageActivity.this, getString(R.string.info_no_marker), Toast.LENGTH_SHORT).show();
 					}
@@ -196,9 +166,6 @@ public class ImageActivity extends Activity {
 			distCoeffs = new MatOfDouble(distCoeffs);
 
 			for(int i = 0; i < ids.toArray().length; i++){
-				tvec = tvecs.row(i);
-				rvec = rvecs.row(i);
-				
 				Aruco.drawAxis(rgb, cameraMatrix, distCoeffs, rvecs.row(i), tvecs.row(i), 0.02f);
 
 				MatOfPoint2f projected = new MatOfPoint2f();
