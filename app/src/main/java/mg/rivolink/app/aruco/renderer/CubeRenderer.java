@@ -45,6 +45,68 @@ public class CubeRenderer implements GLSurfaceView.Renderer {
 		gl.glEnableClientState(GL10.GL_VERTEX_ARRAY);
 		gl.glEnableClientState(GL10.GL_COLOR_ARRAY);
 
+		// ----- ChatGPT
+
+		// Convert rvec to rotation matrix
+		Mat rotationMatrix = new Mat(3, 3, CvType.CV_64F);
+		Calib3d.Rodrigues(rvec, rotationMatrix);
+
+		// Convert rotation matrix and translation vector to OpenGL matrix
+		double[] rotationData = new double[9];
+		rotationMatrix.get(0, 0, rotationData);
+
+		float[] glRotation = new float[16];
+		glRotation[0] = (float) rotationData[0];
+		glRotation[1] = (float) rotationData[3];
+		glRotation[2] = (float) rotationData[6];
+		glRotation[3] = 0;
+
+		glRotation[4] = (float) rotationData[1];
+		glRotation[5] = (float) rotationData[4];
+		glRotation[6] = (float) rotationData[7];
+		glRotation[7] = 0;
+
+		glRotation[8] = (float) rotationData[2];
+		glRotation[9] = (float) rotationData[5];
+		glRotation[10] = (float) rotationData[8];
+		glRotation[11] = 0;
+
+		glRotation[12] = 0;
+		glRotation[13] = 0;
+		glRotation[14] = 0;
+		glRotation[15] = 1;
+
+		float[] glTranslation = new float[16];
+		glTranslation[0] = 1;
+		glTranslation[1] = 0;
+		glTranslation[2] = 0;
+		glTranslation[3] = 0;
+
+		glTranslation[4] = 0;
+		glTranslation[5] = 1;
+		glTranslation[6] = 0;
+		glTranslation[7] = 0;
+
+		glTranslation[8] = 0;
+		glTranslation[9] = 0;
+		glTranslation[10] = -1;
+		glTranslation[11] = 0;
+
+		glTranslation[12] = (float) tvec.get(0, 0)[0];
+		glTranslation[13] = (float) tvec.get(1, 0)[0];
+		glTranslation[14] = (float) tvec.get(2, 0)[0];
+		glTranslation[15] = 1;
+
+		// Combine rotation and translation matrices
+		float[] glModelView = new float[16];
+		Matrix.multiplyMM(glModelView, 0, glTranslation, 0, glRotation, 0);
+
+		gl.glMatrixMode(GL10.GL_MODELVIEW);
+		gl.glLoadIdentity();
+		gl.glMultMatrixf(glModelView, 0);
+
+		// ----- ChatGPT
+
 		mCube.draw(gl);
 
 		/*
