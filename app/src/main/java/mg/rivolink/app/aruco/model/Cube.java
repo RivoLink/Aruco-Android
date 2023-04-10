@@ -14,9 +14,14 @@ public class Cube
 			-one, one, -one, -one, -one, one, one, -one, one, one, one,
 			one, -one, one, one, };
 
-		int colors[] = { 0, 0, 0, one, one, 0, 0, one, one, one, 0, one, 0,
-			one, 0, one, 0, 0, one, one, one, 0, one, one, one, one, one,
-			one, 0, one, one, one, };
+		int colors[] = {
+				one, 0, 0, one,   // red (top)
+				0, one, 0, one,   // green (bottom)
+				0, 0, one, one,   // blue (right)
+				one, one, 0, one,   // orange (front)
+				one, one, 0, one,   // orange (back)
+				one, one, 0, one    // orange (left)
+		};
 
 		byte indices[] = { 0, 4, 5, 0, 5, 1, 1, 5, 6, 1, 6, 2, 2, 6, 7, 2, 7,
 			3, 3, 7, 4, 3, 4, 0, 4, 7, 6, 4, 6, 5, 3, 0, 1, 3, 1, 2 };
