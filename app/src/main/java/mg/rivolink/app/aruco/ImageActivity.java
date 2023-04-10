@@ -40,6 +40,7 @@ import org.opencv.aruco.Aruco;
 import org.opencv.aruco.Dictionary;
 import org.opencv.aruco.DetectorParameters;
 
+import mg.rivolink.app.aruco.renderer.CubeRenderer2;
 import mg.rivolink.app.aruco.utils.CameraParameters;
 import android.opengl.*;
 import mg.rivolink.app.aruco.renderer.CubeRenderer;
@@ -50,8 +51,9 @@ public class ImageActivity extends Activity {
 	private static Mat tvec;
 	private static Mat rvec;
 
-	private CubeRenderer cubeRenderer;
-	
+//	private CubeRenderer cubeRenderer;
+	private CubeRenderer2 cubeRenderer;
+
 	private GLSurfaceView mySurfaceView;
 	private MyGLRenderer myGLRenderer;
 	
@@ -68,6 +70,8 @@ public class ImageActivity extends Activity {
 				String message = "";
 
 				if(loadCameraParams()){
+					cubeRenderer.setCameraParams(cameraMatrix, new MatOfDouble(distCoeffs));
+
 					message = getString(R.string.info_detecting_markers);
 					detectMarkersAsync();
 				}
@@ -104,7 +108,7 @@ public class ImageActivity extends Activity {
 		imageView = findViewById(R.id.imageview);
 		mySurfaceView = findViewById(R.id.glsurfaceview);
 		
-		cubeRenderer = new CubeRenderer(false);
+		cubeRenderer = new CubeRenderer2();
 		mySurfaceView.setRenderer(cubeRenderer);
 		
 		if(getIntent().getData() != null) try {
@@ -146,7 +150,7 @@ public class ImageActivity extends Activity {
 					@Override
 					public void run() {
 						if(bitmap != null){
-							cubeRenderer.setVectors(tvec, rvec);
+							cubeRenderer.addCube(tvec, rvec);
 							imageView.setImageBitmap(bitmap);
 						}
 						else
