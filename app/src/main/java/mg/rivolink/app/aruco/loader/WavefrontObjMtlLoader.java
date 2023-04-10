@@ -30,7 +30,7 @@ public class WavefrontObjMtlLoader {
         ArrayList<Integer> indexList = new ArrayList<>();
         ArrayList<Integer> materialIdList = new ArrayList<>();
 
-        MtlLoader mtlLoader = new MtlLoader(mtlReader);
+        MtlLoader mtlLoader = new MtlLoader(context, mtlReader);
         mMaterials = mtlLoader.getMaterials();
 
         try {
@@ -124,6 +124,10 @@ public class WavefrontObjMtlLoader {
 
     public int[] getMaterialIds() {
         return mMaterialIds;
+    }
+	
+	public int[] getColors() {
+        return new int[]{};
     }
 
     public Material[] getMaterials() {

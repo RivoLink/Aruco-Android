@@ -144,7 +144,9 @@ public class CubeRenderer implements GLSurfaceView.Renderer {
 		gl.glLoadIdentity();
 
 		if((tvec != null) && (rvec != null)){
-			rvec.put(0,0, new double[]{.5, 0, 0});
+			//rvec.put(0,0, new double[]{0.4, 0, 0});
+			
+			double[] rvecScaled = rvec.get(0, 0);
 
 			// Apply the rotation from rvec
 			Mat rotationMatrix = new Mat();
@@ -162,10 +164,13 @@ public class CubeRenderer implements GLSurfaceView.Renderer {
 			if(!done){
 				done = true;
 
-				double[] rvecScaled = rvec.get(0, 0);
 				Log.d(TAG, String.format("%.2f, %.2f, %.2f", (float) rvecScaled[0], (float) rvecScaled[1], (float) rvecScaled[2]));
 				Log.d(TAG, "-------------");
 
+				float r = (float)Math.toDegrees(rvecScaled[0]);
+				Log.d(TAG, String.format("rad: %.2f, deg: %.2f",rvecScaled[0], r));
+				Log.d(TAG, "-------------");
+				
 				Log.d(TAG, String.format("%.2f, %.2f, %.2f", rotationMatrixData[0], rotationMatrixData[1], rotationMatrixData[2]));
 				Log.d(TAG, String.format("%.2f, %.2f, %.2f", rotationMatrixData[3], rotationMatrixData[4], rotationMatrixData[5]));
 				Log.d(TAG, String.format("%.2f, %.2f, %.2f", rotationMatrixData[6], rotationMatrixData[7], rotationMatrixData[8]));

@@ -19,8 +19,9 @@ public class CubeObj {
     private ByteBuffer mIndexBuffer;
 
     public CubeObj(Context context) {
-        WavefrontObjMtlLoader parser = new WavefrontObjMtlLoader(context, R.raw.cube_obj, R.raw.cube_mtl);
-
+        //WavefrontObjMtlLoader parser = new WavefrontObjMtlLoader(context, R.raw.cube_obj, R.raw.cube_mtl);
+		WavefrontObjMtlLoader parser = new WavefrontObjMtlLoader(context, R.raw.box_obj, R.raw.box_mtl);
+		
         float[] vertices = parser.getVertices();
         int[] indices = parser.getIndices();
         int[] colors = parser.getColors(); // load colors from MTL file

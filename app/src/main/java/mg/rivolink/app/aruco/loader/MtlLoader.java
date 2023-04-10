@@ -12,7 +12,7 @@ import java.util.Map;
 public class MtlLoader {
     private Map<String, Material> mMaterialMap;
 
-    public MtlLoader(BufferedReader reader) {
+    public MtlLoader(Context context, BufferedReader reader) {
         mMaterialMap = new HashMap<>();
 
         // Load the MTL file from the resource ID
@@ -26,7 +26,7 @@ public class MtlLoader {
                     String[] parts = line.split("\\s+");
                     int id = mMaterialMap.size();
                     String materialName = parts[1];
-                    currentMaterial = new Material(materialName, id);
+                    currentMaterial = new Material(id, materialName);
                     mMaterialMap.put(materialName, currentMaterial);
                 } else if (line.startsWith("Ka ")) {
                     // Ambient color
